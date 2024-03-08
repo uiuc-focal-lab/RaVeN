@@ -1,0 +1,36 @@
+
+
+
+Eps : 0.05
+Individual verified: 192
+Baseline verified: 192.0
+Uap no diff verified 194.0
+Uap verified: 194.0
+Extra verified: 2.0
+Extra diff verified 0.0
+Avg. times [0.022967600822448732, 0.09175598621368408, 0.09040756225585937, 0.0963014841079712]
+
+
+
+No diff constraint time 0.031011343002319336
+No diff optimization time 0.03560004234313965
+With diff constraint time 0.0342576265335083
+With diff optimization time 0.03619992733001709
+
+
+
+Eps : 0.05
+Individual verified: 192
+Baseline verified: 192.0
+Uap no diff verified 194.0
+Uap verified: 194.0
+Extra verified: 2.0
+Extra diff verified 0.0
+Avg. times [0.03794780969619751, 0.1441145658493042, 0.14147597551345825, 0.15231064558029175]
+
+
+
+No diff constraint time 0.048671948909759524
+No diff optimization time 0.05383533239364624
+With diff constraint time 0.05695497989654541
+With diff optimization time 0.0542089581489563
