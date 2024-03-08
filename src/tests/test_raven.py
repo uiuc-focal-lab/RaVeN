@@ -13,7 +13,7 @@ class TestBasicUap(TestCase):
         uap_verfication_args = raven_args.RaVeNArgs(
             individual_prop_domain=Domain.DEEPPOLY,
             domain=Domain.RAVEN, baseline_domain=Domain.IOFORMULATION, dataset=Dataset.MNIST, sink_label=None,
-            spec_type=InputSpecType.UAP_BINARY, count=1, count_per_prop=2, eps=0.15, net=config.MNIST_BINARY_PGD_RELU,                                                                                                              
+            spec_type=InputSpecType.UAP, count=1, count_per_prop=2, eps=0.15, net=config.MNIST_FFN_01,                                                                                                              
             timeout=100, output_dir='results_trial/', radius_l=0.002, radius_r=0.25,
             uap_mode=raven_args.RavenMode.UAP, compute_proportion=True, write_file=False,
             no_lp_for_verified = True, debug_mode=False, track_differences=True, lp_formulation_threshold=10,
