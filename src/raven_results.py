@@ -98,7 +98,6 @@ class RavenResultList:
                         diff_constraint_time += raven_res.timings.constraint_formulation_time
                     if raven_res.timings.optimization_time is not None:
                         diff_optimization_time += raven_res.timings.optimization_time
-        print(f'count {count}')
         for i, _  in enumerate(times):
             print(f'time {times[i]}')
             if times[i] is not None and count > 0:

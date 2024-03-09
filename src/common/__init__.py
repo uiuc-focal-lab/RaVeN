@@ -1,30 +1,19 @@
 import re
 from enum import Enum
 
-RESULT_DIR = 'results/'
 
-
-def strip_name(obj, pos=-1):
-    return re.split('\.|/', str(obj))[pos]
 
 
 # Domains used for verification
 class Domain(Enum):
     DEEPZ = 1
     DEEPPOLY = 2
-    BOX = 3
-    LP = 4
-    LIRPA_IBP = 5
-    LIRPA_CROWN = 6
-    LIRPA_CROWN_IBP = 7
-    LIRPA_CROWN_OPT = 8
-    LIRPA_CROWN_FORWARD = 9
-    INDIVIDUAL = 13
-    IOFORMULATION = 14
-    RAVEN = 15
+    INDIVIDUAL = 3
+    IOFORMULATION = 4
+    RAVEN = 5
 
 
-# Used for status of the complete verifier
+# Used for status of the verifier (currently unused)
 class Status(Enum):
     VERIFIED = 1
     ADV_EXAMPLE = 2

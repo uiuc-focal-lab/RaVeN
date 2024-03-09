@@ -209,7 +209,7 @@ class IOFormulation:
                     if global_lb >= 0:
                         verified_status = Status.VERIFIED
                 else:
-                    print("Baseline Verified ", ans)
+                    # print("Baseline Verified ", ans)
                     verified_proportion = ans
                     if verified_proportion >= self.args.cutoff_percentage:
                         verified_status = Status.VERIFIED
@@ -227,7 +227,7 @@ class IOFormulation:
                 if global_lb >= 0:
                     verified_status = Status.VERIFIED
             else:
-                print("Baseline Verified  ", ans)
+                # print("Baseline Verified  ", ans)
                 verified_proportion = ans
                 if verified_proportion >= self.args.cutoff_percentage:
                     verified_status = Status.VERIFIED

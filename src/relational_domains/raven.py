@@ -190,7 +190,7 @@ class RaVeN:
                 verified_percentages = uap_lp_transformer.optimize_milp_percent()
                 verified_props = verified_percentages * len(self.props)
                 verified_percentages = (verified_props + self.baseline_verified_props) / self.total_props
-                print("Diff Verified percentages", verified_percentages)
+                # print("Diff Verified percentages", verified_percentages)
                 if verified_percentages >= self.args.cutoff_percentage:
                     verified_status = Status.VERIFIED
 
