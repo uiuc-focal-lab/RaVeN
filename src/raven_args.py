@@ -40,6 +40,7 @@ class RaVeNArgs:
         self.net_name = net
 
         # Additional parameters for customization.
+        self.output_dir = output_dir
         self.enable_ablation = enable_ablation
         self.timeout = timeout
         self.sink_label = sink_label

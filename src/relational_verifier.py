@@ -40,13 +40,14 @@ def UapVerificationBackend(props, raven_args):
     input_per_prop = raven_args.count_per_prop
     raven_result_list = RavenResultList()
     for i in range(uap_prop_count):
-        print(f"\n\n ***** verifying property {i} ***** \n\n")
+        print(f"\n\n ***** verifying property {i+1} ***** \n\n")
         props_to_analyze = props[i * input_per_prop : (i+1) * input_per_prop] 
         uap_verifier = RelationalVerifierBackendWrapper(props=props_to_analyze, args=raven_args)
         
         # Run Untargeted UAP verification. 
         res = uap_verifier.run_untargeted_uap()
         raven_result_list.add_results(res)
+        raven_result_list.print_last_Uap_targeted(args=raven_args)
     if raven_args.write_file == True:
        raven_result_list.analyze(raven_args)
 
@@ -56,7 +57,7 @@ def UapTargetedBackend(props, raven_args):
     input_per_prop = raven_args.count_per_prop
     raven_result_list = RavenResultList()
     for i in range(uap_prop_count):
-        print(f"\n\n ***** verifying property {i} ***** \n\n")
+        print(f"\n\n ***** verifying property {i+1} ***** \n\n")
         props_to_analyze = props[i * input_per_prop : (i+1) * input_per_prop]
         targeted_uap_verifier = RelationalVerifierBackendWrapper(props=props_to_analyze, args=raven_args)
         # Run the targeted uap verification
@@ -73,7 +74,7 @@ def MonotonicityBackend(props, raven_args):
     input_per_prop = raven_args.count_per_prop * 2
     raven_result_list = RavenResultList()
     for i in range(uap_prop_count):
-        print(f"\n\n ***** verifying property {i} ***** \n\n")
+        print(f"\n\n ***** verifying property {i+1} ***** \n\n")
         props_to_analyze = props[i * input_per_prop : (i+1) * input_per_prop]
         monotonicity_verifier = RelationalVerifierBackendWrapper(props=props_to_analyze, args=raven_args)
         # Run the monotonicity verification
