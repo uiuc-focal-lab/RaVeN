@@ -120,7 +120,7 @@ class RavenResultList:
             print('Improvement over I/O Formulation {:0.2f} %\n'.format(diff_ioformulation))
             if args.enable_ablation:
                 diff_ablation = (uap_verified_count - uap_verified_without_diff)
-                print('Improvement over I/O Formulation {:0.2f} %\n'.format(diff_ablation))
+                print('Improvement over no difference constraints {:0.2f} %\n'.format(diff_ablation))
 
         if args.spec_type == InputSpecType.UAP_BINARY:
             print('Individual worst-case hamming distance: {:0.2f} \n'.format(args.count_per_prop - individual_verified_count * args.count_per_prop/ 100.0))
@@ -134,7 +134,7 @@ class RavenResultList:
             print('Reduction over I/O Formulation {:0.2f} \n'.format(diff_ioformulation* args.count_per_prop/ 100.0))
             if args.enable_ablation:
                 diff_ablation = (uap_verified_count - uap_verified_without_diff)
-                print('Reduction over no difference constraints {:0.2f} \n'.format(diff_ablation/ 100.0))
+                print('Reduction over no difference constraints {:0.2f} \n'.format(diff_ablation * args.count_per_prop/ 100.0))
 
 
 
