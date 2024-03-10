@@ -12,8 +12,11 @@ class InputSpecType(Enum):
     LINF = 1
     PATCH = 2
     GLOBAL = 3
+    # Untargeted uap.
     UAP = 4
+    # Targeted uap.
     UAP_TARGETED = 5
+    # Worst-case hamming distance.
     UAP_BINARY = 6
 
 def get_mean_std(dataset):

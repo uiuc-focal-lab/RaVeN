@@ -38,6 +38,8 @@ class RaVeNArgs:
         # Location of the network (see src/config.py).
         self.net = config.NET_HOME + net
         self.net_name = net
+        # Raven mode e.g. UAP or MONOTONICITY
+        self.uap_mode = uap_mode
 
         # Additional parameters for customization.
         self.output_dir = output_dir
