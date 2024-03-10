@@ -28,7 +28,6 @@ def model_cnn_3layer_fixed(in_ch, in_dim, kernel_size, width, linear_size = None
         nn.ReLU(),
         nn.Linear(linear_size, 10)
     )
-    print(f'model size: {sum([p.numel() for p in model.parameters()])}')
     return model
 
 
