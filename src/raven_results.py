@@ -72,6 +72,20 @@ class RavenResultList:
         baseline_res = res.baseline_res
         uap_no_diff_res = res.result_with_no_diff
         raven_res = res.raven_res
+        
+        if args.spec_type == InputSpecType.UAP_TARGETED:
+            results = [raven_res[i].verified_proportion for i in range(10)]
+            print('RaVeN certified UAP accuracy: {:0.2f}  %\n'.format(results))
+            if individual_res is not None:
+                deepz_res = [[] for i in range(10)]
+                for i in range(len(individual_res)):
+                    for j in range(10):
+                        if res.props[i].out_constr.label == j:
+                            continue
+                        deepz_res[j].append((individual_res[i].target_ubs[j]).min() <= 0)
+                veri = torch.tensor([(sum(res)).item() for res in deepz_res])
+                individual_verified_count += veri
+                file.write(f"individual verified proportion {[(veri[i]/len(deepz_res[i])).item() for i in range(len(deepz_res))]}\n")
         if individual_res is not None:
             veri = sum([torch.min(res.final_lb) >= 0 for res in individual_res])
             individual_verified_count += veri
@@ -135,9 +149,6 @@ class RavenResultList:
             if args.enable_ablation:
                 diff_ablation = (uap_verified_count - uap_verified_without_diff)
                 print('Reduction over no difference constraints {:0.2f} \n'.format(diff_ablation * args.count_per_prop/ 100.0))
-
-        if args.spec_type == InputSpecType.UAP_TARGETED:
-            print('RaVeN certified UAP accuracy: {:0.2f}  %\n'.format(uap_verified_count))
 
 
 
