@@ -67,7 +67,7 @@ class IOFormulation:
 
             self.eps = res.eps
 
-    def formulate_zono_lb(self):
+    def formulate_zono_lb(self, target = False):
         if self.zono_coefs is None or self.zono_centers is None:
             raise ValueError("coefs or center is NULL.")
         assert len(self.zono_coefs) == len(self.zono_centers)
@@ -90,7 +90,6 @@ class IOFormulation:
         for i, input_coefs in enumerate(actual_coefs):
             input_coefs = input_coefs.detach().numpy()
             t = self.model.addMVar(input_coefs.shape[0], lb=float('-inf'), ub=float('inf'), name=f'individual_lbs_{i}')
-            print(input_coefs.shape[0])
             self.model.addConstr(input_coefs @ epsilons + lbs[i] == t)
             individual_lbs.append(t)
             var_min = self.model.addVar(lb=-float('inf'), ub=float('inf'), 
@@ -99,6 +98,23 @@ class IOFormulation:
             self.model.addGenConstrMin(var_min, t.tolist())
             self.prop_mins.append(var_min)
             self.model.update()
+        
+        if target:
+            self.target_prop_mins = []
+            for j in range(10):
+                temp_prop_mins = []
+                for i, input_coefs in enumerate(actual_coefs):
+                    input_coefs = input_coefs.detach().numpy()
+                    t = self.model.addMVar(input_coefs.shape[0], lb=float('-inf'), ub=float('inf'), name=f'individual_lbs_{i}')
+                    self.model.addConstr(input_coefs @ epsilons + lbs[i] == t)
+                    individual_lbs.append(t)
+                    var_min = self.model.addVar(lb=-float('inf'), ub=float('inf'), 
+                                                        vtype=grb.GRB.CONTINUOUS, 
+                                                        name=f'var_min_{i}')
+                    self.model.addGenConstrMin(var_min, t[j])
+                    temp_prop_mins = prop_mins.append(var_min)
+                    self.model.update()
+                self.target_prop_mins.append(temp_prop_mins)
 
 
     def optimize_lp(self, proportion, target = False):
@@ -118,7 +134,7 @@ class IOFormulation:
                 bin_sizes = []
                 for j in range(10):
                     binary_vars = []
-                    for i, var_min in enumerate(self.prop_mins):
+                    for i, var_min in enumerate(self.target_prop_mins[j]):
                         if self.props[i].out_constr.label == j:
                             continue
                         binary_vars.append(self.model.addVar(vtype=grb.GRB.BINARY, name=f'b{i}')) 
@@ -137,9 +153,11 @@ class IOFormulation:
                     self.model.setObjective(p, grb.GRB.MINIMIZE)
                     self.model.optimize()
                     if self.model.status == 2:
-                        return p.X
+                        verified_percentages.append(p.X)
+                        bin_sizes.append(len(binary_vars))
                     else:
-                        return 0.0
+                        verified_percentages.append(0.0)
+                        bin_sizes.append(len(binary_vars))
                 return verified_percentages, bin_sizes
             else:
                 binary_vars = []
@@ -166,7 +184,7 @@ class IOFormulation:
 
     def run_zono_lp_baseline(self, proportion, target = False):
         self.baseline_lbs.sort()
-        self.formulate_zono_lb()
+        self.formulate_zono_lb(target = target)
         return self.optimize_lp(proportion=proportion, target = target)
 
     def pos_neg_weight_decomposition(self, coef):
