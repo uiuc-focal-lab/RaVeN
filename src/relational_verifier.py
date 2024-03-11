@@ -63,6 +63,7 @@ def UapTargetedBackend(props, raven_args):
         # Run the targeted uap verification
         res = targeted_uap_verifier.run_targeted_uap()
         raven_result_list.add_results(res)
+        raven_result_list.print_last_Uap_targeted(args=raven_args)
     if raven_args.write_file == True:
        raven_result_list.analyze_targeted(raven_args)
 
