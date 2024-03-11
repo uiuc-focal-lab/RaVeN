@@ -86,7 +86,7 @@ class RavenResultList:
                 individual_verified_count += veri
                 print(f"Individual certified UAP accuracy: {[(veri[i]/len(deepz_res[i])).item() for i in range(len(deepz_res))]}%\n")
             if baseline_res is not None:
-                print.write(f"I/O Formulation certified UAP accuracy: {[a*100.0 for a in baseline_res.verified_proportion]}%\n")
+                print(f"I/O Formulation certified UAP accuracy: {[a*100.0 for a in baseline_res.verified_proportion]}%\n")
             return
         if individual_res is not None:
             veri = sum([torch.min(res.final_lb) >= 0 for res in individual_res])
