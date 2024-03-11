@@ -103,11 +103,3 @@ def load_pth_model(path, param_dict):
     model_structure.load_state_dict(model_state_dict)
     return model_structure
 
-
-# if __name__ == '__main__':
-#     dir_path = '/home/debangshu/nn-proof-transfer/nn_pruning/src/nets/'
-#     net_name = 'cifar_cnn_2layer_width_2_best.pth'
-#     path = dir_path + net_name
-#     param_dict =   {"in_ch": 3, "in_dim": 32, "width": 2, "linear_size": 256}
-#     model = load_pth_model(path, param_dict)
-#     print(model)
