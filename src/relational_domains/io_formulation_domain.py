@@ -89,6 +89,7 @@ class IOFormulation:
         
         for i, input_coefs in enumerate(actual_coefs):
             input_coefs = input_coefs.detach().numpy()
+            print(input_coefs)
             t = self.model.addMVar(input_coefs.shape[0], lb=float('-inf'), ub=float('inf'), name=f'individual_lbs_{i}')
             self.model.addConstr(input_coefs @ epsilons + lbs[i] == t)
             individual_lbs.append(t)
@@ -100,7 +101,7 @@ class IOFormulation:
             self.model.update()
 
 
-    def optimize_lp(self, proportion):
+    def optimize_lp(self, proportion, target = False):
         if proportion == False:
             problem_min = self.model.addVar(lb=-float('inf'), ub=float('inf'), vtype=grb.GRB.CONTINUOUS, 
                                 name='problem_min')
@@ -112,32 +113,61 @@ class IOFormulation:
             else:
                 return -1e6
         else:
-            binary_vars = []
-            for i, var_min in enumerate(self.prop_mins):
-                binary_vars.append(self.model.addVar(vtype=grb.GRB.BINARY, name=f'b{i}')) 
-                # BIG M formulation 
-                BIG_M = 1e11
+            if target:
+                verified_percentages = []
+                bin_sizes = []
+                for j in range(10):
+                    binary_vars = []
+                    for i, var_min in enumerate(self.prop_mins):
+                        if self.props[i].out_constr.label == j:
+                            continue
+                        binary_vars.append(self.model.addVar(vtype=grb.GRB.BINARY, name=f'b{i}')) 
+                        # BIG M formulation 
+                        BIG_M = 1e11
 
-                # Force binary_vars[-1] to be '1' when t_min > 0
-                self.model.addConstr(BIG_M * binary_vars[-1] >= var_min)
+                        # Force binary_vars[-1] to be '1' when t_min > 0
+                        self.model.addConstr(BIG_M * binary_vars[-1] >= var_min)
 
-                # Force binary_vars[-1] to be '0' when t_min < 0 or -t_min  > 0
-                self.model.addConstr(BIG_M * (binary_vars[-1] - 1) <= var_min)
-            p = self.model.addVar(vtype=grb.GRB.CONTINUOUS, name='p')
-            self.model.addConstr(p == grb.quicksum(binary_vars[i] for i in range(self.batch_size)) / self.batch_size)
-            # self.model.reset()
-            self.model.update()
-            self.model.setObjective(p, grb.GRB.MINIMIZE)
-            self.model.optimize()
-            if self.model.status == 2:
-                return p.X
+                        # Force binary_vars[-1] to be '0' when t_min < 0 or -t_min  > 0
+                        self.model.addConstr(BIG_M * (binary_vars[-1] - 1) <= var_min)
+                    p = self.model.addVar(vtype=grb.GRB.CONTINUOUS, name='p')
+                    self.model.addConstr(p == grb.quicksum(binary_vars[i] for i in range(len(binary_vars)))/len(binary_vars))
+                    # self.model.reset()
+                    self.model.update()
+                    self.model.setObjective(p, grb.GRB.MINIMIZE)
+                    self.model.optimize()
+                    if self.model.status == 2:
+                        return p.X
+                    else:
+                        return 0.0
+                return verified_percentages, bin_sizes
             else:
-                return 0.0
+                binary_vars = []
+                for i, var_min in enumerate(self.prop_mins):
+                    binary_vars.append(self.model.addVar(vtype=grb.GRB.BINARY, name=f'b{i}')) 
+                    # BIG M formulation 
+                    BIG_M = 1e11
 
-    def run_zono_lp_baseline(self, proportion):
+                    # Force binary_vars[-1] to be '1' when t_min > 0
+                    self.model.addConstr(BIG_M * binary_vars[-1] >= var_min)
+
+                    # Force binary_vars[-1] to be '0' when t_min < 0 or -t_min  > 0
+                    self.model.addConstr(BIG_M * (binary_vars[-1] - 1) <= var_min)
+                p = self.model.addVar(vtype=grb.GRB.CONTINUOUS, name='p')
+                self.model.addConstr(p == grb.quicksum(binary_vars[i] for i in range(self.batch_size)) / self.batch_size)
+                # self.model.reset()
+                self.model.update()
+                self.model.setObjective(p, grb.GRB.MINIMIZE)
+                self.model.optimize()
+                if self.model.status == 2:
+                    return p.X
+                else:
+                    return 0.0
+
+    def run_zono_lp_baseline(self, proportion, target = False):
         self.baseline_lbs.sort()
         self.formulate_zono_lb()
-        return self.optimize_lp(proportion=proportion)
+        return self.optimize_lp(proportion=proportion, target = target)
 
     def pos_neg_weight_decomposition(self, coef):
         neg_comp = torch.where(coef < 0, coef, torch.zeros_like(coef, device='cpu'))
@@ -191,7 +221,7 @@ class IOFormulation:
     def run(self, proportion=False, targeted = False, monotone = False, monotonic_inv = False, diff=None) -> RavenSingleRes:
         self.populate_info()
         if self.zono_centers is not None:
-            ans = self.run_zono_lp_baseline(proportion=proportion)
+            ans = self.run_zono_lp_baseline(proportion=proportion, target = targeted)
             if ans is None:
                 verified_status = Status.UNKNOWN
                 verified_proportion = sum([self.baseline_lbs[i] >= 0 for i in range(len(self.baseline_lbs))])/len(self.baseline_lbs)
