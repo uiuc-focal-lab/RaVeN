@@ -111,7 +111,7 @@ class IOFormulation:
                     var_min = self.model.addVar(lb=-float('inf'), ub=float('inf'), 
                                                         vtype=grb.GRB.CONTINUOUS, 
                                                         name=f'var_min_{i}')
-                    self.model.addGenConstrMin(var_min, t[j])
+                    self.model.addGenConstrMin(var_min, t.tolist()[j])
                     temp_prop_mins = prop_mins.append(var_min)
                     self.model.update()
                 self.target_prop_mins.append(temp_prop_mins)
