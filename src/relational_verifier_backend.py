@@ -41,6 +41,14 @@ class RelationalVerifierBackendWrapper:
             individual_verification_results = baseline_verfier.run()
         individual_time = time.time() - start_time
 
+        # Run the I/O formulation verifier.
+        start_time = time.time()
+        baseline_res = self.run_raven_backend(domain=self.args.baseline_domain, individual_verification_results=individual_verification_results, targeted = True)
+        baseline_time = time.time() - start_time
+        baseline_res.timings = LP_TIMINGS(total_time=individual_time + baseline_time,
+                                                            constraint_formulation_time=None,
+                                                            optimization_time=None)
+
         # Run the UAP Verifier for Targeted UAP.
         start_time = time.time()
         uap_algorithm_res = self.run_raven_backend(domain=self.args.domain, individual_verification_results=individual_verification_results, targeted = True)
@@ -51,7 +59,7 @@ class RelationalVerifierBackendWrapper:
                                      constraint_formulation_time=uap_algorithm_res.constraint_time,
                                      optimization_time=uap_algorithm_res.optimize_time)
 
-        return RavenResult(baseline_res=None, raven_res=uap_algorithm_res, individual_res=None, targeted = True, times = None, individual_time=individual_time, props = self.props)
+        return RavenResult(baseline_res=baseline_res, raven_res=uap_algorithm_res, individual_res=individual_verification_results, targeted = True, times = None, individual_time=individual_time, props = self.props)
 
     # Untargeted UAP and worst-case hamming distance verification.
     def run_untargeted_uap(self) -> RavenResult:

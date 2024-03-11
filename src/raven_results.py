@@ -74,7 +74,7 @@ class RavenResultList:
         raven_res = res.raven_res
         
         if args.spec_type == InputSpecType.UAP_TARGETED:
-            print('RaVeN certified UAP accuracy: {}  %\n'.format(raven_res.verified_proportion))
+            print('RaVeN certified UAP accuracy: {}  %\n'.format([a*100.0 for a in raven_res.verified_proportion]))
             if individual_res is not None:
                 deepz_res = [[] for i in range(10)]
                 for i in range(len(individual_res)):
@@ -84,8 +84,10 @@ class RavenResultList:
                         deepz_res[j].append((individual_res[i].target_ubs[j]).min() <= 0)
                 veri = torch.tensor([(sum(res)).item() for res in deepz_res])
                 individual_verified_count += veri
-                file.write(f"individual verified proportion {[(veri[i]/len(deepz_res[i])).item() for i in range(len(deepz_res))]}\n")
-                return
+                print(f"Individual certified UAP accuracy: {[(veri[i]/len(deepz_res[i])).item() for i in range(len(deepz_res))]}%\n")
+            if baseline_res is not None:
+                print.write(f"I/O Formulation certified UAP accuracy: {[a*100.0 for a in baseline_res.verified_proportion]}%\n")
+            return
         if individual_res is not None:
             veri = sum([torch.min(res.final_lb) >= 0 for res in individual_res])
             individual_verified_count += veri
@@ -249,21 +251,6 @@ class RavenResultList:
                 diff_ablation = (uap_verified_count - uap_verified_without_diff)
                 print('Reduction over no difference constraints {:0.2f} \n'.format(diff_ablation/ count))
 
-        if args.spec_type == InputSpecType.UAP_TARGETED:
-            count = count * args.count_per_prop
-            print('Individual certified UAP accuracy: {:0.2f} %\n'.format(individual_verified_count/ count * 100))
-            print('I/O Formulation certified UAP accuracy: {:0.2f} %\n'.format(baseline_verified_count/ count * 100))
-            if args.enable_ablation:
-                print('RaVeN no difference constraints certified UAP accuracy: {:0.2f} %\n'.format(uap_verified_without_diff/ count * 100))
-            print('RaVeN certified UAP accuracy: {:0.2f}  %\n'.format(uap_verified_count/ count * 100))
-            diff_individual = (uap_verified_count - individual_verified_count)
-            print('Improvement over Individual {:0.2f} %\n'.format(diff_individual/ count * 100))
-            diff_ioformulation = (uap_verified_count - baseline_verified_count)
-            print('Improvement over I/O Formulation {:0.2f} %\n'.format(diff_ioformulation/ count * 100))
-            if args.enable_ablation:
-                diff_ablation = (uap_verified_count - uap_verified_without_diff)
-                print('Improvement over no difference constraints {:0.2f} %\n'.format(diff_ablation/ count * 100))
-
         print("\n\n******************** Aggregated Runtime ********************\n\n")
 
         print('Avg. Individual time: {:0.3f} sec.\n'.format(times[0]))
@@ -308,6 +295,8 @@ class RavenResultList:
         individual_verified_count = torch.zeros(10)
         baseline_verified_count = torch.zeros(10)
         uap_verified_count = torch.zeros(10)
+        diff_constraint_time = 0
+        diff_optimization_time = 0
         times = [0, 0, 0, 0, 0]
         diff = ''
         if args.track_differences is True:
@@ -351,4 +340,56 @@ class RavenResultList:
         file.write(f'Uap verified: {uap_verified_count.tolist()} total: {sum(uap_verified_count).item()}\n')
         file.write(f'Extra verified: {(uap_verified_count - baseline_verified_count).tolist()} total: {sum(uap_verified_count).item() - sum(baseline_verified_count).item()}\n')
         file.write(f'times: {times}\n')
-        file.close()                       
+
+        print("\n\n******************** Aggregated Result ********************\n\n")
+
+
+
+        if args.spec_type == InputSpecType.UAP:
+            count = count * args.count_per_prop
+            print('Individual certified UAP accuracy: {:0.2f} %\n'.format(individual_verified_count/ count * 100))
+            print('I/O Formulation certified UAP accuracy: {:0.2f} %\n'.format(baseline_verified_count/ count * 100))
+            if args.enable_ablation:
+                print('RaVeN no difference constraints certified UAP accuracy: {:0.2f} %\n'.format(uap_verified_without_diff/ count * 100))
+            print('RaVeN certified UAP accuracy: {:0.2f}  %\n'.format(uap_verified_count/ count * 100))
+            diff_individual = (uap_verified_count - individual_verified_count)
+            print('Improvement over Individual {:0.2f} %\n'.format(diff_individual/ count * 100))
+            diff_ioformulation = (uap_verified_count - baseline_verified_count)
+            print('Improvement over I/O Formulation {:0.2f} %\n'.format(diff_ioformulation/ count * 100))
+            if args.enable_ablation:
+                diff_ablation = (uap_verified_count - uap_verified_without_diff)
+                print('Improvement over no difference constraints {:0.2f} %\n'.format(diff_ablation/ count * 100))
+
+        if args.spec_type == InputSpecType.UAP_BINARY:
+            print('Individual worst-case hamming distance: {:0.2f} \n'.format(args.count_per_prop - individual_verified_count/ count))
+            print('I/O Formulation worst-case hamming distance: {:0.2f} \n'.format(args.count_per_prop - baseline_verified_count/ count))
+            if args.enable_ablation:
+                print('RaVeN no difference constraints worst-case hamming distance: {:0.2f} \n'.format(args.count_per_prop - uap_verified_without_diff/ count))
+            print('RaVeN worst-case hamming distance: {:0.2f}  \n'.format(args.count_per_prop - uap_verified_count/ count))
+            diff_individual = (uap_verified_count - individual_verified_count)
+            print('Reduction over Individual {:0.2f} \n'.format(diff_individual/ count))
+            diff_ioformulation = (uap_verified_count - baseline_verified_count)
+            print('Reduction over I/O Formulation {:0.2f} \n'.format(diff_ioformulation/ count))
+            if args.enable_ablation:
+                diff_ablation = (uap_verified_count - uap_verified_without_diff)
+                print('Reduction over no difference constraints {:0.2f} \n'.format(diff_ablation/ count))
+
+        print("\n\n******************** Aggregated Runtime ********************\n\n")
+
+        print('Avg. Individual time: {:0.3f} sec.\n'.format(times[0]))
+        print('Avg. I/O Formulation time: {:0.3f} sec.\n'.format(times[1]))
+        if args.enable_ablation:
+            print('Avg. RaVeN no difference time: {:0.3f} sec.\n'.format(times[2]))
+        print('Avg. RaVeN time: {:0.3f} sec.\n'.format(times[3]))
+
+        # Write the formulation and optimization times.
+        file.write('\n\n\n')
+        if uap_no_diff_res is not None and uap_no_diff_res.timings is not None:
+            file.write(f'No diff constraint time {layerwise_constraint_time}\n')
+            file.write(f'No diff optimization time {layerwise_optimization_time}\n')
+
+        if raven_res is not None and raven_res.timings is not None:
+            file.write(f'With diff constraint time {diff_constraint_time}\n')
+            file.write(f'With diff optimization time {diff_optimization_time}\n')
+
+        file.close()                    
