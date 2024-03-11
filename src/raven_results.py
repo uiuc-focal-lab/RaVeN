@@ -137,18 +137,7 @@ class RavenResultList:
                 print('Reduction over no difference constraints {:0.2f} \n'.format(diff_ablation * args.count_per_prop/ 100.0))
 
         if args.spec_type == InputSpecType.UAP_TARGETED:
-            print('Individual certified UAP accuracy: {:0.2f} %\n'.format(individual_verified_count))
-            print('I/O Formulation certified UAP accuracy: {:0.2f} %\n'.format(baseline_verified_count))
-            if args.enable_ablation:
-                print('RaVeN no difference constraints certified UAP accuracy: {:0.2f} %\n'.format(uap_verified_without_diff))
             print('RaVeN certified UAP accuracy: {:0.2f}  %\n'.format(uap_verified_count))
-            diff_individual = (uap_verified_count - individual_verified_count)
-            print('Improvement over Individual {:0.2f} %\n'.format(diff_individual))
-            diff_ioformulation = (uap_verified_count - baseline_verified_count)
-            print('Improvement over I/O Formulation {:0.2f} %\n'.format(diff_ioformulation))
-            if args.enable_ablation:
-                diff_ablation = (uap_verified_count - uap_verified_without_diff)
-                print('Improvement over no difference constraints {:0.2f} %\n'.format(diff_ablation))
 
 
 

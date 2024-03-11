@@ -168,7 +168,7 @@ class RaVeN:
         elif targeted:
             # Case 2: MILP formulation for targeted UAP.
             verified_percentages, bin_sizes = uap_lp_transformer.optimize_targeted()
-            print("Diff global proportion ", verified_percentages)
+            #print("Diff global proportion ", verified_percentages)
             results = []
             for i, an in enumerate(verified_percentages):
                 verified_proportion = an
