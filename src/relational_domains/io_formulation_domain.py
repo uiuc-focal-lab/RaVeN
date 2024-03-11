@@ -107,12 +107,7 @@ class IOFormulation:
                     input_coefs = input_coefs.detach().numpy()
                     t = self.model.addMVar(input_coefs.shape[0], lb=float('-inf'), ub=float('inf'), name=f'individual_lbs_{i}')
                     self.model.addConstr(input_coefs @ epsilons + lbs[i] == t)
-                    individual_lbs.append(t)
-                    var_min = self.model.addVar(lb=-float('inf'), ub=float('inf'), 
-                                                        vtype=grb.GRB.CONTINUOUS, 
-                                                        name=f'var_min_{i}')
-                    self.model.addGenConstrMin(var_min, t.tolist()[j])
-                    temp_prop_mins = prop_mins.append(var_min)
+                    temp_prop_mins = prop_mins.append(t.tolist()[j])
                     self.model.update()
                 self.target_prop_mins.append(temp_prop_mins)
 
