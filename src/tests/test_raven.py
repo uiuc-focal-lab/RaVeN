@@ -97,6 +97,45 @@ class TestUntargetedUapLarge(TestCase):
                 uap_mode=raven_args.RavenMode.UAP, compute_proportion=True, write_file=True)
         relational_ver.RelationalVerification(raven_verfication_args)
 
+"""
+Tests for Monotonoicity verification.
+"""
+class TestMonotonicity(TestCase):
+    # Monotonicity verification for the Adult dataset
+    def test_adult_mono(self):
+        raven_verfication_args = uap_ver.UapAnalysisArgs(
+                individual_prop_domain=Domain.DEEPPOLY,
+                domain=Domain.RAVEN, baseline_domain=Domain.IOFORMULATION, dataset=Dataset.ADULT,
+                spec_type=InputSpecType.UAP, count=10, count_per_prop=1, eps=2.5, 
+                net=config.ADULT_TANH, timeout=300, output_dir='pldi-results/', 
+                uap_mode=raven_args.raven_args.MONOTONICITY, compute_proportion=True, write_file=True,
+                monotone_prop = 0, monotone_inv=False, monotone_splits = 10)
+        relational_ver.RelationalVerification(raven_verfication_args)
+
+    # Monotonicity verification for the Housing dataset
+    def test_housing_mono(self):
+        raven_verfication_args = uap_ver.UapAnalysisArgs(
+                individual_prop_domain=Domain.DEEPZ,
+                domain=Domain.RAVEN, baseline_domain=Domain.IOFORMULATION, dataset=Dataset.HOUSING,
+                spec_type=InputSpecType.UAP, count=98, count_per_prop=1, eps=50.0, 
+                net=config.HOUSING_RM_CRIM, timeout=300, output_dir='pldi-results/', 
+                uap_mode=raven_args.raven_args.MONOTONICITY, compute_proportion=True, write_file=True,
+                monotone_prop = MONOTONE_PROP.CRIM, monotone_inv=True)
+        relational_ver.RelationalVerification(raven_verfication_args)
+
+"""
+Tests for Targeted UAP verification.
+"""
+class TestTargetedUap(TestCase):
+    # Targeted UAP for ConvSmall CIFAR10 DIFFAI Network.
+    def test_convsmall_diffai_cifar10(self):
+        raven_verfication_args = raven_args.RaVeNArgs(
+                individual_prop_domain=Domain.DEEPZ,
+                domain=Domain.RAVEN, baseline_domain=Domain.IOFORMULATION, dataset=Dataset.CIFAR10,
+                spec_type=InputSpecType.UAP_TARGETED, count=20, count_per_prop=5, eps=4.0/255, 
+                net=config.CIFAR_CONV_DIFFAI, timeout=300, output_dir='pldi-results/',
+                uap_mode=raven_args.RavenMode.TARGETED_UAP, compute_proportion=True, write_file=True)
+        relational_ver.RelationalVerification(raven_verfication_args)
 
 
 """

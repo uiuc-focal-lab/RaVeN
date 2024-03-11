@@ -112,7 +112,7 @@ class RavenResultList:
             print('Individual certified UAP accuracy: {:0.2f} %\n'.format(individual_verified_count))
             print('I/O Formulation certified UAP accuracy: {:0.2f} %\n'.format(baseline_verified_count))
             if args.enable_ablation:
-                print('RaVeN no differnce constraints certified UAP accuracy: {:0.2f} %\n'.format(uap_verified_without_diff))
+                print('RaVeN no difference constraints certified UAP accuracy: {:0.2f} %\n'.format(uap_verified_without_diff))
             print('RaVeN certified UAP accuracy: {:0.2f}  %\n'.format(uap_verified_count))
             diff_individual = (uap_verified_count - individual_verified_count)
             print('Improvement over Individual {:0.2f} %\n'.format(diff_individual))
@@ -126,7 +126,7 @@ class RavenResultList:
             print('Individual worst-case hamming distance: {:0.2f} \n'.format(args.count_per_prop - individual_verified_count * args.count_per_prop/ 100.0))
             print('I/O Formulation worst-case hamming distance: {:0.2f} \n'.format(args.count_per_prop - baseline_verified_count* args.count_per_prop/ 100.0))
             if args.enable_ablation:
-                print('RaVeN no differnce constraints worst-case hamming distance: {:0.2f} \n'.format(args.count_per_prop - uap_verified_without_diff* args.count_per_prop/ 100.0))
+                print('RaVeN no difference constraints worst-case hamming distance: {:0.2f} \n'.format(args.count_per_prop - uap_verified_without_diff* args.count_per_prop/ 100.0))
             print('RaVeN worst-case hamming distance: {:0.2f}  \n'.format(args.count_per_prop - uap_verified_count* args.count_per_prop/ 100.0))
             diff_individual = (uap_verified_count - individual_verified_count)
             print('Reduction over Individual {:0.2f} \n'.format(diff_individual* args.count_per_prop/ 100.0))
@@ -135,6 +135,20 @@ class RavenResultList:
             if args.enable_ablation:
                 diff_ablation = (uap_verified_count - uap_verified_without_diff)
                 print('Reduction over no difference constraints {:0.2f} \n'.format(diff_ablation * args.count_per_prop/ 100.0))
+
+        if args.spec_type == InputSpecType.UAP_TARGETED:
+            print('Individual certified UAP accuracy: {:0.2f} %\n'.format(individual_verified_count))
+            print('I/O Formulation certified UAP accuracy: {:0.2f} %\n'.format(baseline_verified_count))
+            if args.enable_ablation:
+                print('RaVeN no difference constraints certified UAP accuracy: {:0.2f} %\n'.format(uap_verified_without_diff))
+            print('RaVeN certified UAP accuracy: {:0.2f}  %\n'.format(uap_verified_count))
+            diff_individual = (uap_verified_count - individual_verified_count)
+            print('Improvement over Individual {:0.2f} %\n'.format(diff_individual))
+            diff_ioformulation = (uap_verified_count - baseline_verified_count)
+            print('Improvement over I/O Formulation {:0.2f} %\n'.format(diff_ioformulation))
+            if args.enable_ablation:
+                diff_ablation = (uap_verified_count - uap_verified_without_diff)
+                print('Improvement over no difference constraints {:0.2f} %\n'.format(diff_ablation))
 
 
 
@@ -211,7 +225,7 @@ class RavenResultList:
             print('Individual certified UAP accuracy: {:0.2f} %\n'.format(individual_verified_count/ count * 100))
             print('I/O Formulation certified UAP accuracy: {:0.2f} %\n'.format(baseline_verified_count/ count * 100))
             if args.enable_ablation:
-                print('RaVeN no differnce constraints certified UAP accuracy: {:0.2f} %\n'.format(uap_verified_without_diff/ count * 100))
+                print('RaVeN no difference constraints certified UAP accuracy: {:0.2f} %\n'.format(uap_verified_without_diff/ count * 100))
             print('RaVeN certified UAP accuracy: {:0.2f}  %\n'.format(uap_verified_count/ count * 100))
             diff_individual = (uap_verified_count - individual_verified_count)
             print('Improvement over Individual {:0.2f} %\n'.format(diff_individual/ count * 100))
@@ -225,7 +239,7 @@ class RavenResultList:
             print('Individual worst-case hamming distance: {:0.2f} \n'.format(args.count_per_prop - individual_verified_count/ count))
             print('I/O Formulation worst-case hamming distance: {:0.2f} \n'.format(args.count_per_prop - baseline_verified_count/ count))
             if args.enable_ablation:
-                print('RaVeN no differnce constraints worst-case hamming distance: {:0.2f} \n'.format(args.count_per_prop - uap_verified_without_diff/ count))
+                print('RaVeN no difference constraints worst-case hamming distance: {:0.2f} \n'.format(args.count_per_prop - uap_verified_without_diff/ count))
             print('RaVeN worst-case hamming distance: {:0.2f}  \n'.format(args.count_per_prop - uap_verified_count/ count))
             diff_individual = (uap_verified_count - individual_verified_count)
             print('Reduction over Individual {:0.2f} \n'.format(diff_individual/ count))
@@ -235,12 +249,27 @@ class RavenResultList:
                 diff_ablation = (uap_verified_count - uap_verified_without_diff)
                 print('Reduction over no difference constraints {:0.2f} \n'.format(diff_ablation/ count))
 
+        if args.spec_type == InputSpecType.UAP_TARGETED:
+            count = count * args.count_per_prop
+            print('Individual certified UAP accuracy: {:0.2f} %\n'.format(individual_verified_count/ count * 100))
+            print('I/O Formulation certified UAP accuracy: {:0.2f} %\n'.format(baseline_verified_count/ count * 100))
+            if args.enable_ablation:
+                print('RaVeN no difference constraints certified UAP accuracy: {:0.2f} %\n'.format(uap_verified_without_diff/ count * 100))
+            print('RaVeN certified UAP accuracy: {:0.2f}  %\n'.format(uap_verified_count/ count * 100))
+            diff_individual = (uap_verified_count - individual_verified_count)
+            print('Improvement over Individual {:0.2f} %\n'.format(diff_individual/ count * 100))
+            diff_ioformulation = (uap_verified_count - baseline_verified_count)
+            print('Improvement over I/O Formulation {:0.2f} %\n'.format(diff_ioformulation/ count * 100))
+            if args.enable_ablation:
+                diff_ablation = (uap_verified_count - uap_verified_without_diff)
+                print('Improvement over no difference constraints {:0.2f} %\n'.format(diff_ablation/ count * 100))
+
         print("\n\n******************** Aggregated Runtime ********************\n\n")
 
         print('Avg. Individual time: {:0.3f} sec.\n'.format(times[0]))
         print('Avg. I/O Formulation time: {:0.3f} sec.\n'.format(times[1]))
         if args.enable_ablation:
-            print('Avg. RaVeN no differnce time: {:0.3f} sec.\n'.format(times[2]))
+            print('Avg. RaVeN no difference time: {:0.3f} sec.\n'.format(times[2]))
         print('Avg. RaVeN time: {:0.3f} sec.\n'.format(times[3]))
 
         # Write the formulation and optimization times.
