@@ -89,8 +89,8 @@ class IOFormulation:
         
         for i, input_coefs in enumerate(actual_coefs):
             input_coefs = input_coefs.detach().numpy()
-            print(input_coefs)
             t = self.model.addMVar(input_coefs.shape[0], lb=float('-inf'), ub=float('inf'), name=f'individual_lbs_{i}')
+            print(input_coefs.shape[0])
             self.model.addConstr(input_coefs @ epsilons + lbs[i] == t)
             individual_lbs.append(t)
             var_min = self.model.addVar(lb=-float('inf'), ub=float('inf'), 
