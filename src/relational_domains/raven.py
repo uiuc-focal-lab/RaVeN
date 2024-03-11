@@ -170,14 +170,14 @@ class RaVeN:
             verified_percentages, bin_sizes = uap_lp_transformer.optimize_targeted()
             #print("Diff global proportion ", verified_percentages)
             results = []
-            for i, an in enumerate(verified_percentages):
-                verified_proportion = an
-                if verified_proportion >= self.args.cutoff_percentage:
-                    verified_status = Status.VERIFIED
-                results.append(RavenSingleRes(domain=self.args.domain, input_per_prop=self.args.count_per_prop,
-                        status=verified_status, global_lb=global_lb, time_taken=None, 
-                        verified_proportion=verified_proportion, bin_size = bin_sizes[i], constraint_time = uap_lp_transformer.constraint_time, optimize_time = uap_lp_transformer.optimize_time))
-                verified_status = Status.UNKNOWN
+            # for i, an in enumerate(verified_percentages):
+            #     verified_proportion = an
+            #     if verified_proportion >= self.args.cutoff_percentage:
+            #         verified_status = Status.VERIFIED
+            results = RavenSingleRes(domain=self.args.domain, input_per_prop=self.args.count_per_prop,
+                        status=Status.UNKNOWN, global_lb=global_lb, time_taken=None, 
+                        verified_proportion=verified_percentages, bin_size = bin_sizes, constraint_time = uap_lp_transformer.constraint_time, optimize_time = uap_lp_transformer.optimize_time)
+                # verified_status = Status.UNKNOWN
             return results
         else:
             # Case 3: MILP formulation for untargeted UAP and worst-case hamming distance.

@@ -48,8 +48,8 @@ class RelationalVerifierBackendWrapper:
 
         # Populate Timings.
         uap_algorithm_res.timings = LP_TIMINGS(total_time=(individual_time + uap_time), 
-                                     constraint_formulation_time=uap_algorithm_res[0].constraint_time,
-                                     optimization_time=uap_algorithm_res[0].optimize_time)
+                                     constraint_formulation_time=uap_algorithm_res.constraint_time,
+                                     optimization_time=uap_algorithm_res.optimize_time)
 
         return RavenResult(baseline_res=None, raven_res=uap_algorithm_res, individual_res=None, targeted = True, times = None, individual_time=individual_time, props = self.props)
 
