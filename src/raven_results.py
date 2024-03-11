@@ -74,9 +74,7 @@ class RavenResultList:
         raven_res = res.raven_res
         
         if args.spec_type == InputSpecType.UAP_TARGETED:
-            print('hi')
-            results = [raven_res[i].verified_proportion for i in range(10)]
-            print('RaVeN certified UAP accuracy: {:0.2f}  %\n'.format(results))
+            print('RaVeN certified UAP accuracy: {:0.2f}  %\n'.format(raven_res.verified_proportion))
             if individual_res is not None:
                 deepz_res = [[] for i in range(10)]
                 for i in range(len(individual_res)):
