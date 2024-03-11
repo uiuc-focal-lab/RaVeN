@@ -131,7 +131,7 @@ class RaVeNMILPtransformer:
                     continue
                 final_var = self.gmdl.addMVar(constraint_mat.shape[1], lb=-float('inf'), ub=float('inf'), vtype=grb.GRB.CONTINUOUS, 
                                                 name=f'final_var_{i}')
-                self.gmdl.addConstr(final_var == constraint_mat.T.detach().numpy() @ self.gurobi_var_dict[len(self.gurobi_var_dict) - 2]['vs'][i])
+                self.gmdl.addConstr(final_var == constraint_mat.T.detach().numpy() @ self.gurobi_variables[-1]['vs'][i])
                 final_vars.append(final_var)
                 final_var_max = self.gmdl.addVar(lb=-float('inf'), ub=float('inf'), 
                                                     vtype=grb.GRB.CONTINUOUS, 
