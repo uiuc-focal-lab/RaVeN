@@ -215,7 +215,7 @@ def prepare_data(dataset, train=False, batch_size=100):
             transforms.ToTensor(), ])
 
         testset = torchvision.datasets.CIFAR10(
-            root='../data', train=train, download=True, transform=transform_test)
+            root='/data', train=train, download=True, transform=transform_test)
 
         testloader = torch.utils.data.DataLoader(
             testset, batch_size=batch_size, shuffle=False, num_workers=2)
@@ -223,7 +223,7 @@ def prepare_data(dataset, train=False, batch_size=100):
         inputs, _ = next(iter(testloader))
     elif dataset == Dataset.MNIST:
         testloader = torch.utils.data.DataLoader(
-            torchvision.datasets.MNIST('../data', train=train, download=True,
+            torchvision.datasets.MNIST('/data', train=train, download=True,
                                        transform=torchvision.transforms.Compose([
                                            torchvision.transforms.ToTensor(),
                                            torchvision.transforms.Normalize(
