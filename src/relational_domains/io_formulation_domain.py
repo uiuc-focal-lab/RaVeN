@@ -255,14 +255,18 @@ class IOFormulation:
                     if global_lb >= 0:
                         verified_status = Status.VERIFIED
                 else:
-                    # print("Baseline Verified ", ans)
-                    verified_proportion = ans
-                    if verified_proportion >= self.args.cutoff_percentage:
-                        verified_status = Status.VERIFIED
+                    if not targeted:
+                        # print("Baseline Verified ", ans)
+                        verified_proportion = ans
+                        if verified_proportion >= self.args.cutoff_percentage:
+                            verified_status = Status.VERIFIED
+                    else:
+                        verified_proportion, bin_size = ans
+                        verified_status = Status.UNKNOWN
 
             return RavenSingleRes(domain=self.args.domain, input_per_prop=self.args.count_per_prop,
                     status=verified_status, global_lb=global_lb, time_taken=None, 
-                    verified_proportion=verified_proportion)
+                    verified_proportion=verified_proportion, bin_size = bin_size)
         elif self.lb_coefs is not None:
             ans = self.run_crown_lp_baseline(proportion=proportion)
             global_lb = None
