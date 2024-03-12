@@ -120,6 +120,7 @@ class RaVeN:
             self.populate_diff_structs()
 
         print('hi1')
+        print(self.monotone_lp)
         if monotone and not self.monotone_lp:
             print('hi2')
             verified_status = Status.UNKNOWN
