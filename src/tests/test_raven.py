@@ -6,6 +6,7 @@ from src.common import Domain
 from src.common.dataset import Dataset
 import src.relational_verifier as relational_ver 
 import src.raven_args as raven_args
+from config import MONOTONE_PROP
 
 
 """
