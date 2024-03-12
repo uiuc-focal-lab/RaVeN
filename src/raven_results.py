@@ -302,7 +302,6 @@ class RavenResultList:
             if cur_i == num_split:
                 if cur_status:
                     diff_verified_count += 1
-                print(min_val)
                 cur_i = 0
                 cur_status = True
                 min_val = 10

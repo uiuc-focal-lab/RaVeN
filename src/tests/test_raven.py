@@ -104,14 +104,15 @@ Tests for Monotonoicity verification.
 class TestMonotonicity(TestCase):
     # Monotonicity verification for the Adult dataset
     def test_adult_mono(self):
-        raven_verfication_args = raven_args.RaVeNArgs(
-                individual_prop_domain=Domain.DEEPPOLY,
-                domain=Domain.RAVEN, baseline_domain=Domain.IOFORMULATION, dataset=Dataset.ADULT,
-                spec_type=InputSpecType.UAP, count=10, count_per_prop=1, eps=2.5, 
-                net=config.ADULT_TANH, timeout=300, output_dir='pldi-results/', 
-                uap_mode=raven_args.RavenMode.MONOTONICITY, compute_proportion=True, write_file=True,
-                monotone_prop = 0, monotone_inv=False, monotone_splits = 10)
-        relational_ver.RelationalVerification(raven_verfication_args)
+        for prop in [0, 2, 3, 4, 5]:
+                raven_verfication_args = raven_args.RaVeNArgs(
+                        individual_prop_domain=Domain.DEEPPOLY,
+                        domain=Domain.RAVEN, baseline_domain=Domain.IOFORMULATION, dataset=Dataset.ADULT,
+                        spec_type=InputSpecType.UAP, count=10, count_per_prop=1, eps=0.5, 
+                        net=config.ADULT_TANH, timeout=300, output_dir='pldi-results/', 
+                        uap_mode=raven_args.RavenMode.MONOTONICITY, compute_proportion=True, write_file=True,
+                        monotone_prop = prop, monotone_inv=False, monotone_splits = 10)
+                relational_ver.RelationalVerification(raven_verfication_args)
 
     # Monotonicity verification for the Housing dataset
     def test_housing_mono(self):
