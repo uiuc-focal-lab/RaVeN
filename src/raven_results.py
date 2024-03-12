@@ -358,13 +358,13 @@ class RavenResultList:
         print("\n\n******************** Aggregated Result ********************\n\n")
 
         count = count * args.count_per_prop
-        print('Individual certified UAP accuracy: {:0.2f} %\n'.format(raven_verified_count/ counts * 100))
-        print('I/O Formulation certified UAP accuracy: {:0.2f} %\n'.format(baseline_verified_count/ counts * 100))
-        print('RaVeN certified UAP accuracy: {:0.2f}  %\n'.format(raven_verified_count/ counts * 100))
+        print('Individual certified UAP accuracy: {} %\n'.format(raven_verified_count/ counts * 100))
+        print('I/O Formulation certified UAP accuracy: {} %\n'.format(baseline_verified_count/ counts * 100))
+        print('RaVeN certified UAP accuracy: {}  %\n'.format(raven_verified_count/ counts * 100))
         diff_individual = (raven_verified_count - individual_verified_count)
-        print('Improvement over Individual {:0.2f} %\n'.format(diff_individual/ counts * 100))
+        print('Improvement over Individual {} %\n'.format(diff_individual/ counts * 100))
         diff_ioformulation = (raven_verified_count - baseline_verified_count)
-        print('Improvement over I/O Formulation {:0.2f} %\n'.format(diff_ioformulation/ counts * 100))
+        print('Improvement over I/O Formulation {} %\n'.format(diff_ioformulation/ counts * 100))
 
         print("\n\n******************** Aggregated Runtime ********************\n\n")
 
