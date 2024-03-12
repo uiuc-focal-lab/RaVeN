@@ -105,7 +105,12 @@ class IOFormulation:
                 temp_prop_mins = []
                 for i, input_coefs in enumerate(actual_coefs):
                     input_coefs = input_coefs.detach().numpy()
-                    temp_prop_mins.append((input_coefs @ epsilons + lbs[i])[j])
+                    if j > self.props[i].out_constr.label:
+                        temp_prop_mins.append((input_coefs @ epsilons + lbs[i])[j-1])
+                    elif j == self.props[i].out_constr.label:
+                        continue
+                    else:
+                        temp_prop_mins.append((input_coefs @ epsilons + lbs[i])[j])
                     self.model.update()
                 self.target_prop_mins.append(temp_prop_mins)
 
@@ -128,8 +133,8 @@ class IOFormulation:
                 for j in range(10):
                     binary_vars = []
                     for i, var_min in enumerate(self.target_prop_mins[j]):
-                        if self.props[i].out_constr.label == j:
-                            continue
+                        # if self.props[i].out_constr.label == j:
+                        #     continue
                         binary_vars.append(self.model.addVar(vtype=grb.GRB.BINARY, name=f'b{i}')) 
                         # BIG M formulation 
                         BIG_M = 1e11
