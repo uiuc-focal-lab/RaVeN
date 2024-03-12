@@ -336,7 +336,7 @@ class RavenResultList:
         raven_verified_count = torch.zeros(10)
         diff_constraint_time = 0
         diff_optimization_time = 0
-        times = [0, 0, 0, 0, 0]
+        times = [0, 0]
         diff = ''
         if args.track_differences is True:
             diff = '_diff'        
@@ -370,9 +370,6 @@ class RavenResultList:
             if res.times is not None:
                 times[0] += res.times[0]
                 times[1] += res.times[0] + res.times[1]
-                times[2] += res.times[0] + res.times[2]
-                times[3] += 0 if res.times[3] is None else res.times[3]
-                times[4] += 0 if res.times[4] is None else res.times[4]
                 file.write(f'Times: {res.times}\n')
         file.write(f'\n\n\nEps : {args.eps}\n')
         file.write(f'Individual verified: {individual_verified_count.tolist()} total: {sum(individual_verified_count).item()}\n')
@@ -391,7 +388,7 @@ class RavenResultList:
         print("\n\n******************** Aggregated Runtime ********************\n\n")
 
         print('Avg. Individual time: {:0.3f} sec.\n'.format(times[0]))
-        print('Avg. RaVeN time: {:0.3f} sec.\n'.format(times[3]))
+        print('Avg. RaVeN time: {:0.3f} sec.\n'.format(times[1]))
 
         if raven_res is not None and raven_res.timings is not None:
             file.write(f'With diff constraint time {diff_constraint_time}\n')
