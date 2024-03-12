@@ -33,7 +33,7 @@ def RelationalVerification(raven_args: RaVeNArgs):
     elif raven_args.uap_mode is RavenMode.TARGETED:
         UapTargetedBackend(props=props, raven_args=raven_args)
     elif raven_args.uap_mode is RavenMode.MONOTONICITY:
-        MonotonicityBackend(props=props, raven_args=raven_args)
+        UapMonotonicityBackend(props=props, raven_args=raven_args)
 
 # Backend for verifying untargeted UAP and worst-case hamming distance.
 def UapVerificationBackend(props, raven_args):
