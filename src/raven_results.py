@@ -75,7 +75,6 @@ class RavenResultList:
         
         if args.spec_type == InputSpecType.UAP_TARGETED:
             raven_per = torch.tensor([a*100.0 for a in raven_res.verified_proportion])
-            print('RaVeN certified UAP accuracy: {}  %\n'.format(raven_per))
             if individual_res is not None:
                 deepz_res = [[] for i in range(10)]
                 for i in range(len(individual_res)):
@@ -87,14 +86,10 @@ class RavenResultList:
                 individual_verified_count += veri
                 individual_per = torch.tensor([(veri[i]/len(deepz_res[i])).item()* 100.0 for i in range(len(deepz_res))])
                 print(f"Individual certified UAP accuracy: {individual_per}%\n")
-            if baseline_res is not None:
-                baseline_per = torch.tensor([a*100.0 for a in baseline_res.verified_proportion])
-                print(f"I/O Formulation certified UAP accuracy: {baseline_per}%\n")
             
+            print('RaVeN certified UAP accuracy: {}  %\n'.format(raven_per))
             diff_individual = (raven_per - individual_per)
             print(f'Improvement over Individual {diff_individual} %\n')
-            diff_ioformulation = (raven_per - baseline_per)
-            print(f'Improvement over I/O Formulation {diff_ioformulation} %\n')
             return
         if individual_res is not None:
             veri = sum([torch.min(res.final_lb) >= 0 for res in individual_res])
@@ -305,13 +300,13 @@ class RavenResultList:
                 cur_i = 0
                 cur_status = True
                 min_val = 10
-        file.write(f'\n\n\nProp : {args.monotone_prop}\n')
+        file.write(f'\n\n\nProp : {args.monotone_prop/args.count * 100.0}%\n')
         file.write(f'\n\n\nEps : {args.eps}\n')
         file.write(f'Diff verified: {diff_verified_count}\n')
         file.write(f'Time: {times}')
         # file.write(f'LP verified: {lp_verified_count}\n')
         print(f"******************** Feature {args.monotone_prop}, Eps {args.eps} ********************\n")
-        print(f'Verified: {diff_verified_count}, Time: {times}')
+        print(f'Verified: {diff_verified_count/args.count * 100.0}%, Time: {times}')
         file.close() 
 
     # def analyze_monotone(self, args):
@@ -341,7 +336,7 @@ class RavenResultList:
         raven_verified_count = torch.zeros(10)
         diff_constraint_time = 0
         diff_optimization_time = 0
-        times = [0, 0, 0, 0, 0]
+        times = [0, 0]
         diff = ''
         if args.track_differences is True:
             diff = '_diff'        
@@ -364,10 +359,6 @@ class RavenResultList:
                 veri = torch.tensor([(sum(res)).item() for res in deepz_res])
                 individual_verified_count += veri
                 file.write(f"Individual certified UAP accuracy: {[(veri[i]/len(deepz_res[i])).item()*100.0 for i in range(len(deepz_res))]}%\n")
-            if baseline_res is not None:
-                baseline_verified_count += torch.tensor([baseline_res.verified_proportion[i] * baseline_res.bin_size[i] for i in range(len(baseline_res.verified_proportion))])
-                #baseline_verified_count += baseline_res.verified_proportion * args.count_per_prop
-                file.write(f"I/O Formulation certified UAP accuracy: {[a * 100.0 for a in baseline_res.verified_proportion]}%\n")
             if raven_res.verified_proportion is not None:
                 raven_verified_count += torch.tensor([raven_res.verified_proportion[i] * raven_res.bin_size[i] for i in range(len(raven_res.verified_proportion))])
                 file.write(f"RaVeN certified UAP accuracy: {[a * 100.0 for a in raven_res.verified_proportion]}%\n")
@@ -379,36 +370,28 @@ class RavenResultList:
             if res.times is not None:
                 times[0] += res.times[0]
                 times[1] += res.times[0] + res.times[1]
-                times[2] += res.times[0] + res.times[2]
-                times[3] += 0 if res.times[3] is None else res.times[3]
-                times[4] += 0 if res.times[4] is None else res.times[4]
                 file.write(f'Times: {res.times}\n')
         file.write(f'\n\n\nEps : {args.eps}\n')
         file.write(f'Individual verified: {individual_verified_count.tolist()} total: {sum(individual_verified_count).item()}\n')
-        file.write(f'I/O Formulation verified: {baseline_verified_count.tolist()} total: {sum(baseline_verified_count).item()}\n')
         file.write(f'RaVeN verified: {raven_verified_count.tolist()} total: {sum(raven_verified_count).item()}\n')
-        file.write(f'Extra verified: {(raven_verified_count - baseline_verified_count).tolist()} total: {sum(raven_verified_count).item() - sum(baseline_verified_count).item()}\n')
+        file.write(f'Extra verified: {(raven_verified_count - individual_verified_count).tolist()} total: {sum(raven_verified_count).item() - sum(baseline_verified_count).item()}\n')
         file.write(f'times: {times}\n')
 
         print("\n\n******************** Aggregated Result ********************\n\n")
 
         count = count * args.count_per_prop
         print('Individual certified UAP accuracy: {} %\n'.format(raven_verified_count/ counts * 100))
-        print('I/O Formulation certified UAP accuracy: {} %\n'.format(baseline_verified_count/ counts * 100))
         print('RaVeN certified UAP accuracy: {}  %\n'.format(raven_verified_count/ counts * 100))
         diff_individual = (raven_verified_count - individual_verified_count)
         print('Improvement over Individual {} %\n'.format(diff_individual/ counts * 100))
-        diff_ioformulation = (raven_verified_count - baseline_verified_count)
-        print('Improvement over I/O Formulation {} %\n'.format(diff_ioformulation/ counts * 100))
 
         print("\n\n******************** Aggregated Runtime ********************\n\n")
 
-        print('Avg. Individual time: {:0.3f} sec.\n'.format(times[0]))
-        print('Avg. I/O Formulation time: {:0.3f} sec.\n'.format(times[1]))
-        print('Avg. RaVeN time: {:0.3f} sec.\n'.format(times[3]))
+        print('Avg. Individual time: {:0.3f} sec.\n'.format(times[0]/args.count))
+        print('Avg. RaVeN time: {:0.3f} sec.\n'.format(times[1]/args.count))
 
         if raven_res is not None and raven_res.timings is not None:
-            file.write(f'With diff constraint time {diff_constraint_time}\n')
-            file.write(f'With diff optimization time {diff_optimization_time}\n')
+            file.write(f'With diff constraint time {diff_constraint_time/args.count}\n')
+            file.write(f'With diff optimization time {diff_optimization_time/args.count}\n')
 
         file.close()                    

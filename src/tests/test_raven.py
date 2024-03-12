@@ -110,11 +110,11 @@ class TestMonotonicity(TestCase):
                 spec_type=InputSpecType.UAP, count=98, count_per_prop=1, eps=50.0, 
                 net=config.HOUSING_RM_CRIM, timeout=300, output_dir='pldi-results/', 
                 uap_mode=raven_args.RavenMode.MONOTONICITY, compute_proportion=True, write_file=True,
-                monotone_prop = MONOTONE_PROP.CRIM, monotone_inv=True)
+                monotone_prop = MONOTONE_PROP.CRIM, monotone_inv=True, monotone_lp = False)
         relational_ver.RelationalVerification(raven_verfication_args)
 
-    # Monotonicity verification for the Adult dataset
-    def test_adult_mono(self):
+    # Monotonicity verification for the Adult dataset with DiffPoly only
+    def test_adult_mono_diffpoly(self):
         for prop in [0, 2, 3, 4, 5]:
                 raven_verfication_args = raven_args.RaVeNArgs(
                         individual_prop_domain=Domain.DEEPPOLY,
@@ -122,7 +122,19 @@ class TestMonotonicity(TestCase):
                         spec_type=InputSpecType.UAP, count=10, count_per_prop=1, eps=2.5, 
                         net=config.ADULT_TANH, timeout=300, output_dir='pldi-results/', 
                         uap_mode=raven_args.RavenMode.MONOTONICITY, compute_proportion=True, write_file=True,
-                        monotone_prop = prop, monotone_inv=False, monotone_splits = 10)
+                        monotone_prop = prop, monotone_inv=False, monotone_splits = 10, monotone_lp = False)
+                relational_ver.RelationalVerification(raven_verfication_args)
+
+    # Monotonicity verification for the Adult dataset with RaVeN
+    def test_adult_mono_raven(self):
+        for prop in [0, 2, 3, 4, 5]:
+                raven_verfication_args = raven_args.RaVeNArgs(
+                        individual_prop_domain=Domain.DEEPPOLY,
+                        domain=Domain.RAVEN, baseline_domain=Domain.IOFORMULATION, dataset=Dataset.ADULT,
+                        spec_type=InputSpecType.UAP, count=10, count_per_prop=1, eps=2.5, 
+                        net=config.ADULT_TANH, timeout=300, output_dir='pldi-results/', 
+                        uap_mode=raven_args.RavenMode.MONOTONICITY, compute_proportion=True, write_file=True,
+                        monotone_prop = prop, monotone_inv=False, monotone_splits = 10, monotone_lp = True)
                 relational_ver.RelationalVerification(raven_verfication_args)
 
 """
@@ -134,7 +146,7 @@ class TestTargetedUap(TestCase):
         raven_verfication_args = raven_args.RaVeNArgs(
                 individual_prop_domain=Domain.DEEPZ,
                 domain=Domain.RAVEN, baseline_domain=Domain.IOFORMULATION, dataset=Dataset.CIFAR10,
-                spec_type=InputSpecType.UAP_TARGETED, count=2, count_per_prop=5, eps=4.0/255, 
+                spec_type=InputSpecType.UAP_TARGETED, count=20, count_per_prop=5, eps=4.0/255, 
                 net=config.CIFAR_CONV_DIFFAI, timeout=300, output_dir='pldi-results/',
                 uap_mode=raven_args.RavenMode.TARGETED, compute_proportion=True, write_file=True)
         relational_ver.RelationalVerification(raven_verfication_args)

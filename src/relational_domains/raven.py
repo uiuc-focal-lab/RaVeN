@@ -32,10 +32,7 @@ class RaVeN:
         self.lp_formulation_threshold = self.args.lp_formulation_threshold
         self.baseline_verified_props = 0
         self.noise_ind = baseline_results[0].noise_ind
-        if self.args.dataset == Dataset.HOUSING:
-            self.monotone_lp = False
-        else:
-            self.monotone_lp = True
+        self.monotone_lp = self.args.monotone_lp
         self.monotone_splits = self.args.monotone_splits
 
     # Running DiffPoly for each pair of inputs.
@@ -165,7 +162,7 @@ class RaVeN:
         if monotone:
             # Case 1: MILP formulation for monotonicity.
             verified_percentages = uap_lp_transformer.optimize_monotone(monotone)
-            print(verified_percentages)
+            #print(verified_percentages)
             if verified_percentages >= -5 * 1e-7:
                 verified_status = Status.VERIFIED
             return RavenSingleRes(domain=self.args.domain, input_per_prop=self.args.count_per_prop,
