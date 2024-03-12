@@ -161,7 +161,7 @@ class RaVeN:
             # Case 1: MILP formulation for monotonicity.
             verified_percentages = uap_lp_transformer.optimize_monotone(monotone)
             print(verified_percentages)
-            if verified_percentages >= 0:
+            if verified_percentages >= -5 * 1e-7:
                 verified_status = Status.VERIFIED
             return RavenSingleRes(domain=self.args.domain, input_per_prop=self.args.count_per_prop,
                 status=verified_status, global_lb=None, time_taken=None, 

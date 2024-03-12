@@ -101,20 +101,44 @@ class RaVeNMILPtransformer:
         self.gmdl.optimize(softtime)
         self.optimize_time += time.time()
          
+        if self.debug_mode is True:
+            print("Here")
+            self.gmdl.write("./debug_logs/model.lp")
+            # self.gmdl.write("./debug_logs/out.sol")
         
         if self.gmdl.status in [2, 6, 10]:
+            #self.debug_log_file.write(f"proportion {p.X}\n")
+            # print(f"verified proportion {p.X}\n")
+            self.debug_log_file.close()
+            # print("Final MIP gap value: %f" % self.gmdl.MIPGap)
+            # print("Final ObjBound: %f" % self.gmdl.ObjBound)
             return self.gmdl.ObjBound
         else:
             if self.gmdl.status == 4:
                 return 0.0
             elif self.gmdl.status in [9, 11, 13]:
-
+                print("Suboptimal solution")
+                self.debug_log_file.close()
+                print("Final MIP gap value: %f" % self.gmdl.MIPGap)
+                try:
+                    print("Final MIP best value: %f" % p.X)
+                except:
+                    print("No solution obtained")
+                print("Final ObjBound: %f" % self.gmdl.ObjBound)
                 if self.gmdl.SolCount > 0:
                     return self.gmdl.ObjBound
                 else:
-                    return 0.0    
+                    return 0.0
+            self.debug_log_file.close()    
+            print("Gurobi model status", self.gmdl.status)
+            print("The optimization failed\n")
+            # print("Computing computeIIS")
+            # self.gmdl.computeIIS()
+            # print("Computing computeIIS finished")            
+            # self.gmdl.write("model.ilp")
+            self.debug_log_file.close()
             return 0.0
-
+            
     # MILP optimization for targeted UAP.
     def optimize_targeted(self):
         percentages = []
