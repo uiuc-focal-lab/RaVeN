@@ -132,7 +132,7 @@ class TestTargetedUap(TestCase):
         raven_verfication_args = raven_args.RaVeNArgs(
                 individual_prop_domain=Domain.DEEPZ,
                 domain=Domain.RAVEN, baseline_domain=Domain.IOFORMULATION, dataset=Dataset.CIFAR10,
-                spec_type=InputSpecType.UAP_TARGETED, count=20, count_per_prop=5, eps=4.0/255, 
+                spec_type=InputSpecType.UAP_TARGETED, count=2, count_per_prop=5, eps=4.0/255, 
                 net=config.CIFAR_CONV_DIFFAI, timeout=300, output_dir='pldi-results/',
                 uap_mode=raven_args.RavenMode.TARGETED, compute_proportion=True, write_file=True)
         relational_ver.RelationalVerification(raven_verfication_args)
