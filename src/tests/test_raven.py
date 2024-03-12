@@ -108,7 +108,7 @@ class TestMonotonicity(TestCase):
                 raven_verfication_args = raven_args.RaVeNArgs(
                         individual_prop_domain=Domain.DEEPPOLY,
                         domain=Domain.RAVEN, baseline_domain=Domain.IOFORMULATION, dataset=Dataset.ADULT,
-                        spec_type=InputSpecType.UAP, count=10, count_per_prop=1, eps=0.5, 
+                        spec_type=InputSpecType.UAP, count=10, count_per_prop=1, eps=2.5, 
                         net=config.ADULT_TANH, timeout=300, output_dir='pldi-results/', 
                         uap_mode=raven_args.RavenMode.MONOTONICITY, compute_proportion=True, write_file=True,
                         monotone_prop = prop, monotone_inv=False, monotone_splits = 10)

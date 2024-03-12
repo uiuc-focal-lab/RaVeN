@@ -90,7 +90,6 @@ class RaVeNMILPtransformer:
         
     # Optimization for monotonicity.
     def optimize_monotone(self, monotone):
-        print("HIHIHIHI")
         assert len(self.constraint_matrices) == self.batch_size
         if self.batch_size <= 0:
             return 0.0
