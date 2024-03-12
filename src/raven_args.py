@@ -17,7 +17,7 @@ class RaVeNArgs:
                  debug_mode=False, track_differences=True, enable_ablation = False,
                  monotone_prop = None, monotone_inv = False, lp_formulation_threshold=2, 
                  try_image_smoothing=False, filter_threshold=None, 
-                 fold_conv_layers=False, ligweight_diffpoly=False) -> None:
+                 fold_conv_layers=False, ligweight_diffpoly=False, monotone_splits = 1) -> None:
 
         # Individual verification Domain e.g. DeepZ, DeepPoly, etc (see src/common/__init__.py).
         self.individual_prop_domain = individual_prop_domain
@@ -63,6 +63,7 @@ class RaVeNArgs:
         self.all_layer_sub = True
         self.fold_conv_layers = fold_conv_layers
         self.lightweight_diffpoly = ligweight_diffpoly
+        self.monotone_splits = monotone_splits
         # if debug mode on rewrite params.
         if debug_mode == True:
             self.count = 1
