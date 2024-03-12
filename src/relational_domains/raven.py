@@ -118,18 +118,19 @@ class RaVeN:
         if self.args is not None and self.args.fold_conv_layers is True:
             self.populate_diff_structs()
 
-        if monotone and not self.monotone_lp:
+        if monotone:
             verified_status = Status.UNKNOWN
-
+            #print(self.difference_lbs_dict[(0,1)][-1], self.difference_ubs_dict[(0,1)][-1])
             if not monotonic_inv:
                 if self.difference_lbs_dict[(0,1)][-1] >= 0:
                     verified_status = Status.VERIFIED
             else:
                 if self.difference_ubs_dict[(0,1)][-1] <= 0:
                     verified_status = Status.VERIFIED
-            return RavenSingleRes(domain=self.args.domain, input_per_prop=self.args.count_per_prop,
-                    status=verified_status, global_lb=None, time_taken=None, 
-                    verified_proportion=None) 
+            if verified_status == Status.VERIFIED or not self.monotone_lp:
+                return UAPSingleRes(domain=self.args.domain, input_per_prop=self.args.count_per_prop,
+                        status=verified_status, global_lb=self.difference_lbs_dict[(0,1)][-1], time_taken=None, 
+                        verified_proportion=None) 
 
         self.populate_matrices()
             
