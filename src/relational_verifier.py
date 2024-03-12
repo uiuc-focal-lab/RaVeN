@@ -90,7 +90,7 @@ def MonotonicityBackend(props, raven_args):
         # run the uap verification
         res = monotonicity_verifier.run_monotone(raven_args.monotone_prop)
         raven_result_list.add_results(res)
-        if res.UAP_res.status != Status.VERIFIED:
+        if res.raven_res.status != Status.VERIFIED:
             continue_until = int(math.ceil(i/raven_args.monotone_splits) * raven_args.monotone_splits)
     if raven_args.write_file == True:
        raven_result_list.analyze_monotone(raven_args)
