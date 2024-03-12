@@ -87,14 +87,9 @@ class RavenResultList:
                 individual_verified_count += veri
                 individual_per = torch.tensor([(veri[i]/len(deepz_res[i])).item()* 100.0 for i in range(len(deepz_res))])
                 print(f"Individual certified UAP accuracy: {individual_per}%\n")
-            if baseline_res is not None:
-                baseline_per = torch.tensor([a*100.0 for a in baseline_res.verified_proportion])
-                print(f"I/O Formulation certified UAP accuracy: {baseline_per}%\n")
             
             diff_individual = (raven_per - individual_per)
             print(f'Improvement over Individual {diff_individual} %\n')
-            diff_ioformulation = (raven_per - baseline_per)
-            print(f'Improvement over I/O Formulation {diff_ioformulation} %\n')
             return
         if individual_res is not None:
             veri = sum([torch.min(res.final_lb) >= 0 for res in individual_res])
@@ -364,10 +359,6 @@ class RavenResultList:
                 veri = torch.tensor([(sum(res)).item() for res in deepz_res])
                 individual_verified_count += veri
                 file.write(f"Individual certified UAP accuracy: {[(veri[i]/len(deepz_res[i])).item()*100.0 for i in range(len(deepz_res))]}%\n")
-            if baseline_res is not None:
-                baseline_verified_count += torch.tensor([baseline_res.verified_proportion[i] * baseline_res.bin_size[i] for i in range(len(baseline_res.verified_proportion))])
-                #baseline_verified_count += baseline_res.verified_proportion * args.count_per_prop
-                file.write(f"I/O Formulation certified UAP accuracy: {[a * 100.0 for a in baseline_res.verified_proportion]}%\n")
             if raven_res.verified_proportion is not None:
                 raven_verified_count += torch.tensor([raven_res.verified_proportion[i] * raven_res.bin_size[i] for i in range(len(raven_res.verified_proportion))])
                 file.write(f"RaVeN certified UAP accuracy: {[a * 100.0 for a in raven_res.verified_proportion]}%\n")
@@ -385,26 +376,21 @@ class RavenResultList:
                 file.write(f'Times: {res.times}\n')
         file.write(f'\n\n\nEps : {args.eps}\n')
         file.write(f'Individual verified: {individual_verified_count.tolist()} total: {sum(individual_verified_count).item()}\n')
-        file.write(f'I/O Formulation verified: {baseline_verified_count.tolist()} total: {sum(baseline_verified_count).item()}\n')
         file.write(f'RaVeN verified: {raven_verified_count.tolist()} total: {sum(raven_verified_count).item()}\n')
-        file.write(f'Extra verified: {(raven_verified_count - baseline_verified_count).tolist()} total: {sum(raven_verified_count).item() - sum(baseline_verified_count).item()}\n')
+        file.write(f'Extra verified: {(raven_verified_count - individual_verified_count).tolist()} total: {sum(raven_verified_count).item() - sum(baseline_verified_count).item()}\n')
         file.write(f'times: {times}\n')
 
         print("\n\n******************** Aggregated Result ********************\n\n")
 
         count = count * args.count_per_prop
         print('Individual certified UAP accuracy: {} %\n'.format(raven_verified_count/ counts * 100))
-        print('I/O Formulation certified UAP accuracy: {} %\n'.format(baseline_verified_count/ counts * 100))
         print('RaVeN certified UAP accuracy: {}  %\n'.format(raven_verified_count/ counts * 100))
         diff_individual = (raven_verified_count - individual_verified_count)
         print('Improvement over Individual {} %\n'.format(diff_individual/ counts * 100))
-        diff_ioformulation = (raven_verified_count - baseline_verified_count)
-        print('Improvement over I/O Formulation {} %\n'.format(diff_ioformulation/ counts * 100))
 
         print("\n\n******************** Aggregated Runtime ********************\n\n")
 
         print('Avg. Individual time: {:0.3f} sec.\n'.format(times[0]))
-        print('Avg. I/O Formulation time: {:0.3f} sec.\n'.format(times[1]))
         print('Avg. RaVeN time: {:0.3f} sec.\n'.format(times[3]))
 
         if raven_res is not None and raven_res.timings is not None:
