@@ -76,7 +76,7 @@ def MonotonicityBackend(props, raven_args):
     uap_prop_count = raven_args.count * raven_args.monotone_splits
     print(uap_prop_count)
     input_per_prop = raven_args.count_per_prop * 2
-    uap_result_list = UAPResultList()
+    raven_result_list = RavenResultList()
     continue_until = -1
     for i in range(uap_prop_count):
         if continue_until != -1:
@@ -86,14 +86,14 @@ def MonotonicityBackend(props, raven_args):
             continue_until = -1
         print(f"\n\n ***** verifying property {i} ***** \n\n")
         props_to_analyze = props[i * input_per_prop : (i+1) * input_per_prop]
-        uap_analyzer = UAPAnalyzerBackendWrapper(props=props_to_analyze, args=raven_args)
+        monotonicity_verifier = RelationalVerifierBackendWrapper(props=props_to_analyze, args=raven_args)
         # run the uap verification
-        res = uap_analyzer.run_monotone(raven_args.monotone_prop)
-        uap_result_list.add_results(res)
+        res = monotonicity_verifier.run_monotone(raven_args.monotone_prop)
+        raven_result_list.add_results(res)
         if res.UAP_res.status != Status.VERIFIED:
             continue_until = int(math.ceil(i/raven_args.monotone_splits) * raven_args.monotone_splits)
     if raven_args.write_file == True:
-       uap_result_list.analyze_monotone(raven_args)
+       raven_result_list.analyze_monotone(raven_args)
 
 # def MonotonicityBackend(props, raven_args):
 #     uap_prop_count = raven_args.count
