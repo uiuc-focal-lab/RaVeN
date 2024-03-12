@@ -128,7 +128,7 @@ class RaVeN:
                 if self.difference_ubs_dict[(0,1)][-1] <= 0:
                     verified_status = Status.VERIFIED
             if verified_status == Status.VERIFIED or not self.monotone_lp:
-                return UAPSingleRes(domain=self.args.domain, input_per_prop=self.args.count_per_prop,
+                return RavenSingleRes(domain=self.args.domain, input_per_prop=self.args.count_per_prop,
                         status=verified_status, global_lb=self.difference_lbs_dict[(0,1)][-1], time_taken=None, 
                         verified_proportion=None) 
 
