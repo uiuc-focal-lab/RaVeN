@@ -263,10 +263,13 @@ class IOFormulation:
                     else:
                         verified_proportion, bin_size = ans
                         verified_status = Status.UNKNOWN
+                        return RavenSingleRes(domain=self.args.domain, input_per_prop=self.args.count_per_prop,
+                            status=verified_status, global_lb=global_lb, time_taken=None, 
+                            verified_proportion=verified_proportion, bin_size = bin_size)
 
             return RavenSingleRes(domain=self.args.domain, input_per_prop=self.args.count_per_prop,
                     status=verified_status, global_lb=global_lb, time_taken=None, 
-                    verified_proportion=verified_proportion, bin_size = bin_size)
+                    verified_proportion=verified_proportion)
         elif self.lb_coefs is not None:
             ans = self.run_crown_lp_baseline(proportion=proportion)
             global_lb = None
