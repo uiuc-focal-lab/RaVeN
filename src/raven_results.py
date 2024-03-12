@@ -333,7 +333,7 @@ class RavenResultList:
                 baseline_verified_count += torch.tensor([baseline_res.verified_proportion[i] * baseline_res.bin_size[i] for i in range(len(baseline_res.verified_proportion))])
                 #baseline_verified_count += baseline_res.verified_proportion * args.count_per_prop
                 file.write(f"I/O Formulation certified UAP accuracy: {[a * 100.0 for a in baseline_res.verified_proportion]}%\n")
-            if raven_res[0].verified_proportion is not None:
+            if raven_res.verified_proportion is not None:
                 raven_verified_count += torch.tensor([raven_res.verified_proportion[i] * raven_res.bin_size[i] for i in range(len(raven_res.verified_proportion))])
                 file.write(f"RaVeN certified UAP accuracy: {[a * 100.0 for a in raven_res.verified_proportion]}%\n")
                 counts += torch.tensor(raven_res.bin_size)
