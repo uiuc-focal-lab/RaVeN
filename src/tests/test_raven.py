@@ -103,7 +103,7 @@ Tests for Monotonoicity verification.
 class TestMonotonicity(TestCase):
     # Monotonicity verification for the Adult dataset
     def test_adult_mono(self):
-        raven_verfication_args = uap_ver.UapAnalysisArgs(
+        raven_verfication_args = raven_args.RaVeNArgs(
                 individual_prop_domain=Domain.DEEPPOLY,
                 domain=Domain.RAVEN, baseline_domain=Domain.IOFORMULATION, dataset=Dataset.ADULT,
                 spec_type=InputSpecType.UAP, count=10, count_per_prop=1, eps=2.5, 
@@ -114,7 +114,7 @@ class TestMonotonicity(TestCase):
 
     # Monotonicity verification for the Housing dataset
     def test_housing_mono(self):
-        raven_verfication_args = uap_ver.UapAnalysisArgs(
+        raven_verfication_args = raven_args.RaVeNArgs(
                 individual_prop_domain=Domain.DEEPZ,
                 domain=Domain.RAVEN, baseline_domain=Domain.IOFORMULATION, dataset=Dataset.HOUSING,
                 spec_type=InputSpecType.UAP, count=98, count_per_prop=1, eps=50.0, 

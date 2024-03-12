@@ -1,0 +1,31 @@
+name: raven
+channels:
+  - defaults
+  - pytorch
+  - nvidia
+  - gurobi
+dependencies:
+  - pip
+  - torchaudio
+  - pytorch=1.11.0
+  - torchvision
+  - pytorch-cuda=11.8
+  - gurobi
+  - jupyter
+  - ca-certificates
+  - certifi
+  - openssl
+  - protobuf
+  - matplotlib
+  - scipy
+  - pandas
+  - keras
+  - tensorflow
+  - seaborn
+  - tabulate
+  - scikit-learn
+  - pip:
+    - onnxruntime
+    - onnx2torch
+    - onnx2pytorch
+prefix: /apps/conda/cmxu/envs/raven
