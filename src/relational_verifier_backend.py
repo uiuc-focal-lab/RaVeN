@@ -22,7 +22,7 @@ class RelationalVerifierBackendWrapper:
             self.net = util.get_net(self.args.net, self.args.dataset, debug_mode=self.args.debug_mode)    
     
     # Monotonicity verification.
-    def run_monotone(self) -> RavenResult:
+    def run_monotone(self, monotone_prop) -> RavenResult:
         start_time = time.time()
         with torch.no_grad():
             baseline_verfier = BaselineAnalyzerBackend(props=self.props, net=self.net, args=self.args)
