@@ -32,10 +32,7 @@ class RaVeN:
         self.lp_formulation_threshold = self.args.lp_formulation_threshold
         self.baseline_verified_props = 0
         self.noise_ind = baseline_results[0].noise_ind
-        if self.args.dataset == Dataset.HOUSING:
-            self.monotone_lp = False
-        else:
-            self.monotone_lp = True
+        self.monotone_lp = self.args.monotone_lp
         self.monotone_splits = self.args.monotone_splits
 
     # Running DiffPoly for each pair of inputs.

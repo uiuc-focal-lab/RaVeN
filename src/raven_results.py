@@ -305,13 +305,13 @@ class RavenResultList:
                 cur_i = 0
                 cur_status = True
                 min_val = 10
-        file.write(f'\n\n\nProp : {args.monotone_prop}\n')
+        file.write(f'\n\n\nProp : {args.monotone_prop/args.count * 100.0}%\n')
         file.write(f'\n\n\nEps : {args.eps}\n')
         file.write(f'Diff verified: {diff_verified_count}\n')
         file.write(f'Time: {times}')
         # file.write(f'LP verified: {lp_verified_count}\n')
         print(f"******************** Feature {args.monotone_prop}, Eps {args.eps} ********************\n")
-        print(f'Verified: {diff_verified_count}, Time: {times}')
+        print(f'Verified: {diff_verified_count/args.count * 100.0}%, Time: {times}')
         file.close() 
 
     # def analyze_monotone(self, args):
