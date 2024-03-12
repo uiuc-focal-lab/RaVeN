@@ -961,8 +961,8 @@ class RaVeNMILPtransformer:
                                                                  + mu_ub[k])
                         if d_lb[k] < 0 and d_ub[k] > 0:
                             ind = self.gmdl.addVar(vtype=grb.GRB.BINARY, name=f"ind_{self.tanh_binary_count}")
-                            self.addGenConstrIndicator(ind, True, self.gurobi_variables[-1]['ds'][i][j - i -1][k] >= 0)
-                            self.addGenConstrIndicator(ind, False, self.gurobi_variables[-1]['ds'][i][j - i -1][k] <= -1e-9)
+                            self.gmdl.addGenConstrIndicator(ind, True, self.gurobi_variables[-1]['ds'][i][j - i -1][k] >= 0)
+                            self.gmdl.addGenConstrIndicator(ind, False, self.gurobi_variables[-1]['ds'][i][j - i -1][k] <= -1e-9)
                             self.gmdl.addConstr(ds[i][j - i -1][k] >= (1 - ind) * deriv_max * d_lb[k] + deriv_min[k] * self.gurobi_variables[-1]['ds'][i][j - i -1][k])
                             self.gmdl.addConstr(ds[i][j - i -1][k] >= (ind) * (-deriv_max) * d_ub[k]  + deriv_max[k] * self.gurobi_variables[-1]['ds'][i][j - i -1][k])
                             self.gmdl.addConstr(ds[i][j - i -1][k] <= (ind) * deriv_max * d_ub[k] + deriv_min[k] * self.gurobi_variables[-1]['ds'][i][j - i -1][k])
