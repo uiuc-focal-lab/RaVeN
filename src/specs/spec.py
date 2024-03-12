@@ -310,7 +310,7 @@ def get_specs(dataset, spec_type=InputSpecType.LINF, eps=0.01, count=None,
             props = get_binary_uap_spec(inputs=inputs, labels=labels, eps=eps, dataset=dataset, net_name=net_name)   
         return props, inputs
     elif dataset == Dataset.HOUSING:
-        test_dataset = pd.read_csv('monotonic-neural-networks/data/boston_house_pricing/testing_data.csv', index_col=0)
+        test_dataset = pd.read_csv('./data/testing_data.csv', index_col=0)
 
         test_labels = test_dataset.pop('HousePrice')
         test_dataset, test_labels = torch.tensor(np.array(test_dataset), dtype = torch.float32), torch.tensor(np.array(test_labels), dtype = torch.float32)
