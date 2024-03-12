@@ -947,10 +947,10 @@ class RaVeNMILPtransformer:
                             self.gmdl.addGenConstrIndicator(ind, True, self.gurobi_variables[-1]['ds'][i][j - i -1][k] >= 0)
                             self.gmdl.addGenConstrIndicator(ind, False, self.gurobi_variables[-1]['ds'][i][j - i -1][k] <= -1e-9)
                             
-                            # self.gmdl.addConstr(ds[i][j - i -1][k] >= ((1 - ind) * deriv_max[k] * d_lb[k] + deriv_min[k])* self.gurobi_variables[-1]['ds'][i][j - i -1][k])
-                            # self.gmdl.addConstr(ds[i][j - i -1][k] >= ((ind) * (-deriv_max[k]) * d_ub[k]  + deriv_max[k]) * self.gurobi_variables[-1]['ds'][i][j - i -1][k])
-                            # self.gmdl.addConstr(ds[i][j - i -1][k] <= ((ind) * deriv_max[k] * d_ub[k] + deriv_min[k]) * self.gurobi_variables[-1]['ds'][i][j - i -1][k])
-                            # self.gmdl.addConstr(ds[i][j - i -1][k] <= ((1- ind) * (deriv_max[k]) * (-d_lb[k]) + deriv_max[k])  * self.gurobi_variables[-1]['ds'][i][j - i -1][k])
+                            self.gmdl.addConstr(ds[i][j - i -1][k] >= ((1 - ind) * deriv_max[k] * d_lb[k] + deriv_min[k])* self.gurobi_variables[-1]['ds'][i][j - i -1][k])
+                            self.gmdl.addConstr(ds[i][j - i -1][k] >= ((ind) * (-deriv_max[k]) * d_ub[k]  + deriv_max[k]) * self.gurobi_variables[-1]['ds'][i][j - i -1][k])
+                            self.gmdl.addConstr(ds[i][j - i -1][k] <= ((ind) * deriv_max[k] * d_ub[k] + deriv_min[k]) * self.gurobi_variables[-1]['ds'][i][j - i -1][k])
+                            self.gmdl.addConstr(ds[i][j - i -1][k] <= ((1- ind) * (deriv_max[k]) * (-d_lb[k]) + deriv_max[k])  * self.gurobi_variables[-1]['ds'][i][j - i -1][k])
 
             if self.lightweight_difference is True:
                 self.track_differences = False 
