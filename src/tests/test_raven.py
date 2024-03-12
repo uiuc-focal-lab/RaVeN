@@ -108,7 +108,7 @@ class TestMonotonicity(TestCase):
                 domain=Domain.RAVEN, baseline_domain=Domain.IOFORMULATION, dataset=Dataset.ADULT,
                 spec_type=InputSpecType.UAP, count=10, count_per_prop=1, eps=2.5, 
                 net=config.ADULT_TANH, timeout=300, output_dir='pldi-results/', 
-                uap_mode=raven_args.raven_args.MONOTONICITY, compute_proportion=True, write_file=True,
+                uap_mode=raven_args.RavenMode.MONOTONICITY, compute_proportion=True, write_file=True,
                 monotone_prop = 0, monotone_inv=False, monotone_splits = 10)
         relational_ver.RelationalVerification(raven_verfication_args)
 
@@ -119,7 +119,7 @@ class TestMonotonicity(TestCase):
                 domain=Domain.RAVEN, baseline_domain=Domain.IOFORMULATION, dataset=Dataset.HOUSING,
                 spec_type=InputSpecType.UAP, count=98, count_per_prop=1, eps=50.0, 
                 net=config.HOUSING_RM_CRIM, timeout=300, output_dir='pldi-results/', 
-                uap_mode=raven_args.raven_args.MONOTONICITY, compute_proportion=True, write_file=True,
+                uap_mode=raven_args.RavenMode.MONOTONICITY, compute_proportion=True, write_file=True,
                 monotone_prop = MONOTONE_PROP.CRIM, monotone_inv=True)
         relational_ver.RelationalVerification(raven_verfication_args)
 
