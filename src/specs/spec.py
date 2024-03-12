@@ -360,22 +360,16 @@ def get_specs(dataset, spec_type=InputSpecType.LINF, eps=0.01, count=None,
 
             scaled_data_df = pd.DataFrame(scaled_data, columns=feature_cols.columns)
 
-            print(f"For continuous columns:")
             for (col, mean, std) in zip(continuous_columns, continuous_means, continuous_stdev):
-                print(f"Column: {col}, Mean: {mean}, StdDev: {std}")
-                print(f"[-0.4, 0.4] for {col} corresponds to [{mean - 0.4 * std}, {mean + 0.4 * std}] in the original dataset")
 
                 within_range_count = np.sum((scaled_data_df[col] >= -0.4) & (scaled_data_df[col] <= 0.4))
                 total_count = len(scaled_data_df[col])
                 proportion = within_range_count / total_count
 
-                print(f"Proportion of data for {col} that falls within [-0.4, 0.4]: {proportion:.4f}\n")
-
             mask = np.all(np.logical_and(scaled_data[:, continuous_col_indices] >= -0.4,
                                         scaled_data[:, continuous_col_indices] <= 0.4), axis=1)
 
             proportion = np.mean(mask)
-            print(f"Proportion of data points where all five continuous columns fall within [-0.4, 0.4]: {proportion:.4f}")
 
             data = pd.DataFrame(scaled_data, columns=feature_cols.columns)
             return data
