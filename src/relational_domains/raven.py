@@ -36,7 +36,6 @@ class RaVeN:
             self.monotone_lp = False
         else:
             self.monotone_lp = True
-        self.monotone_lp = True
         self.monotone_splits = self.args.monotone_splits
 
     # Running DiffPoly for each pair of inputs.
@@ -119,10 +118,7 @@ class RaVeN:
         if self.args is not None and self.args.fold_conv_layers is True:
             self.populate_diff_structs()
 
-        print('hi1')
-        print(self.monotone_lp)
         if monotone and not self.monotone_lp:
-            print('hi2')
             verified_status = Status.UNKNOWN
 
             if not monotonic_inv:
