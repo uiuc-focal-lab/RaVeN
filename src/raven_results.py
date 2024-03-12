@@ -289,15 +289,14 @@ class RavenResultList:
         cur_i = 0
         cur_status = True
         min_val = 10
-        #print([res.UAP_res.status == Status.VERIFIED for res in self.result_list])
         for i, res in enumerate(self.result_list):
             #file.write(f'\nProperty No. {i}\n\n')
             times += res.times
-            UAP_res = res.UAP_res
-            if UAP_res.status != Status.VERIFIED:
+            raven_res = res.raven_res
+            if raven_res.status != Status.VERIFIED:
                 #diff_verified_count += 1
                 cur_status = False
-                min_val = UAP_res.global_lb
+                min_val = raven_res.global_lb
                 cur_i = num_split - 1
             cur_i += 1
             if cur_i == num_split:
