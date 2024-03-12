@@ -102,6 +102,17 @@ class TestUntargetedUapLarge(TestCase):
 Tests for Monotonoicity verification.
 """
 class TestMonotonicity(TestCase):
+    # Monotonicity verification for the Housing dataset
+    def test_housing_mono(self):
+        raven_verfication_args = raven_args.RaVeNArgs(
+                individual_prop_domain=Domain.DEEPZ,
+                domain=Domain.RAVEN, baseline_domain=Domain.IOFORMULATION, dataset=Dataset.HOUSING,
+                spec_type=InputSpecType.UAP, count=98, count_per_prop=1, eps=50.0, 
+                net=config.HOUSING_RM_CRIM, timeout=300, output_dir='pldi-results/', 
+                uap_mode=raven_args.RavenMode.MONOTONICITY, compute_proportion=True, write_file=True,
+                monotone_prop = MONOTONE_PROP.CRIM, monotone_inv=True)
+        relational_ver.RelationalVerification(raven_verfication_args)
+
     # Monotonicity verification for the Adult dataset
     def test_adult_mono(self):
         for prop in [0, 2, 3, 4, 5]:
@@ -113,17 +124,6 @@ class TestMonotonicity(TestCase):
                         uap_mode=raven_args.RavenMode.MONOTONICITY, compute_proportion=True, write_file=True,
                         monotone_prop = prop, monotone_inv=False, monotone_splits = 10)
                 relational_ver.RelationalVerification(raven_verfication_args)
-
-    # Monotonicity verification for the Housing dataset
-    def test_housing_mono(self):
-        raven_verfication_args = raven_args.RaVeNArgs(
-                individual_prop_domain=Domain.DEEPZ,
-                domain=Domain.RAVEN, baseline_domain=Domain.IOFORMULATION, dataset=Dataset.HOUSING,
-                spec_type=InputSpecType.UAP, count=98, count_per_prop=1, eps=50.0, 
-                net=config.HOUSING_RM_CRIM, timeout=300, output_dir='pldi-results/', 
-                uap_mode=raven_args.RavenMode.MONOTONICITY, compute_proportion=True, write_file=True,
-                monotone_prop = MONOTONE_PROP.CRIM, monotone_inv=True)
-        relational_ver.RelationalVerification(raven_verfication_args)
 
 """
 Tests for Targeted UAP verification.
