@@ -67,7 +67,7 @@ class DiffPropStruct:
 class DiffPoly:
     def __init__(self, input1, input2, net, lb_input1, ub_input1,
                 lb_input2, ub_input2, device='', noise_ind = None,
-                eps = None, monotone = False, monotone_prop = 0, use_all_layers=False, lightweight_diffpoly=False) -> None:
+                eps = None, monotone = False, monotone_prop = 0, monotone_splits = 1, use_all_layers=False, lightweight_diffpoly=False) -> None:
         self.input1 = input1
         self.input2 = input2
         if self.input1.shape[0] == 784:
@@ -94,6 +94,7 @@ class DiffPoly:
         self.noise_ind  = noise_ind
         self.eps = eps
         self.monotone = monotone
+        self.monotone_splits = monotone_splits
         self.use_all_layers = use_all_layers
         self.lightweight_diffpoly = lightweight_diffpoly
         self.monotone_prop = monotone_prop
@@ -876,15 +877,23 @@ class DiffPoly:
             if curr_layer.type in [LayerType.Linear, LayerType.Conv2D]:
                 linear_layer_index -= 1
         
-        if self.monotone:         
-            new_delta_lb, new_delta_ub = self.concretize_bounds(back_prop_struct=back_prop_struct,
-                                                                #delta_lb_layer=torch.zeros(12),#-self.eps * torch.nn.functional.one_hot(self.noise_ind[0], 12).flatten(),
-                                                                delta_lb_layer = torch.zeros(87),
-                                                                delta_ub_layer = self.eps * torch.nn.functional.one_hot(torch.tensor(self.monotone_prop), 87).flatten(),
-                                                                lb_input1_layer=self.lb_input1[-1],
-                                                                ub_input1_layer=self.ub_input1[-1],
-                                                                lb_input2_layer=self.lb_input2[-1],
-                                                                ub_input2_layer=self.ub_input2[-1])
+        if self.monotone:
+            if self.input_shape == (1, 1, 12):         
+                new_delta_lb, new_delta_ub = self.concretize_bounds(back_prop_struct=back_prop_struct,
+                                                                    delta_lb_layer=torch.zeros(12),#-self.eps * torch.nn.functional.one_hot(self.noise_ind[0], 12).flatten(),
+                                                                    delta_ub_layer=self.eps*torch.torch.nn.functional.one_hot(torch.tensor(self.monotone_prop), 12).flatten(),
+                                                                    lb_input1_layer=self.lb_input1[-1],
+                                                                    ub_input1_layer=self.ub_input1[-1],
+                                                                    lb_input2_layer=self.lb_input2[-1],
+                                                                    ub_input2_layer=self.ub_input2[-1])
+            else:
+                new_delta_lb, new_delta_ub = self.concretize_bounds(back_prop_struct=back_prop_struct,
+                                                                    delta_lb_layer = torch.zeros(87),
+                                                                    delta_ub_layer = self.eps/self.monotone_splits * torch.nn.functional.one_hot(torch.tensor(self.monotone_prop), 87).flatten(),
+                                                                    lb_input1_layer=self.lb_input1[-1],
+                                                                    ub_input1_layer=self.ub_input1[-1],
+                                                                    lb_input2_layer=self.lb_input2[-1],
+                                                                    ub_input2_layer=self.ub_input2[-1])
         else:
             new_delta_lb, new_delta_ub = self.concretize_bounds(back_prop_struct=back_prop_struct,
                                                                 delta_lb_layer=self.diff, 
@@ -956,13 +965,23 @@ class DiffPoly:
                 linear_layer_index -= 1
 
         if self.monotone:         
-            new_delta_lb, new_delta_ub = self.concretize_bounds(back_prop_struct=back_prop_struct,
-                                                                delta_lb_layer = torch.zeros(87),
-                                                                delta_ub_layer = self.eps * torch.nn.functional.one_hot(torch.tensor(self.monotone_prop), 87).flatten(),
-                                                                lb_input1_layer=self.lb_input1[-1],
-                                                                ub_input1_layer=self.ub_input1[-1],
-                                                                lb_input2_layer=self.lb_input2[-1],
-                                                                ub_input2_layer=self.ub_input2[-1])
+            if self.input_shape == (1, 1, 12):     
+                new_delta_lb, new_delta_ub = self.concretize_bounds(back_prop_struct=back_prop_struct,
+                                                                    delta_lb_layer=torch.zeros(12),#-self.eps * torch.nn.functional.one_hot(self.noise_ind[0], 12).flatten(),lb_input1_layer=self.lb_input1[-1],
+                                                                    delta_ub_layer=self.eps*torch.torch.nn.functional.one_hot(torch.tensor(self.monotone_prop), 12).flatten(),
+                                                                    lb_input1_layer=self.lb_input1[-1],
+                                                                    ub_input1_layer=self.ub_input1[-1],
+                                                                    lb_input2_layer=self.lb_input2[-1],
+                                                                    ub_input2_layer=self.ub_input2[-1])
+            else:
+                new_delta_lb, new_delta_ub = self.concretize_bounds(back_prop_struct=back_prop_struct,
+                                                                    delta_lb_layer = torch.zeros(87),
+                                                                    delta_ub_layer = self.eps/self.monotone_splits * torch.nn.functional.one_hot(torch.tensor(self.monotone_prop), 87).flatten(),
+                                                                    lb_input1_layer=self.lb_input1[-1],
+                                                                    ub_input1_layer=self.ub_input1[-1],
+                                                                    lb_input2_layer=self.lb_input2[-1],
+                                                                    ub_input2_layer=self.ub_input2[-1])
+
         else:
             new_delta_lb, new_delta_ub = self.concretize_bounds(back_prop_struct=back_prop_struct,
                                                                 delta_lb_layer=self.diff, 
