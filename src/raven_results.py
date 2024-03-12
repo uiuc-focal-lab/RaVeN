@@ -92,9 +92,9 @@ class RavenResultList:
                 print(f"I/O Formulation certified UAP accuracy: {baseline_per}%\n")
             
             diff_individual = (raven_per - individual_per)
-            print('Improvement over Individual {:0.2f} %\n'.format(diff_individual))
+            print(f'Improvement over Individual {diff_individual} %\n')
             diff_ioformulation = (raven_per - baseline_per)
-            print('Improvement over I/O Formulation {:0.2f} %\n'.format(diff_ioformulation))
+            print(f'Improvement over I/O Formulation {diff_ioformulation} %\n')
             return
         if individual_res is not None:
             veri = sum([torch.min(res.final_lb) >= 0 for res in individual_res])
