@@ -75,7 +75,6 @@ class RavenResultList:
         
         if args.spec_type == InputSpecType.UAP_TARGETED:
             raven_per = torch.tensor([a*100.0 for a in raven_res.verified_proportion])
-            print('RaVeN certified UAP accuracy: {}  %\n'.format(raven_per))
             if individual_res is not None:
                 deepz_res = [[] for i in range(10)]
                 for i in range(len(individual_res)):
@@ -88,6 +87,7 @@ class RavenResultList:
                 individual_per = torch.tensor([(veri[i]/len(deepz_res[i])).item()* 100.0 for i in range(len(deepz_res))])
                 print(f"Individual certified UAP accuracy: {individual_per}%\n")
             
+            print('RaVeN certified UAP accuracy: {}  %\n'.format(raven_per))
             diff_individual = (raven_per - individual_per)
             print(f'Improvement over Individual {diff_individual} %\n')
             return
@@ -387,11 +387,11 @@ class RavenResultList:
 
         print("\n\n******************** Aggregated Runtime ********************\n\n")
 
-        print('Avg. Individual time: {:0.3f} sec.\n'.format(times[0]))
-        print('Avg. RaVeN time: {:0.3f} sec.\n'.format(times[1]))
+        print('Avg. Individual time: {:0.3f} sec.\n'.format(times[0]/args.count))
+        print('Avg. RaVeN time: {:0.3f} sec.\n'.format(times[1]/args.count))
 
         if raven_res is not None and raven_res.timings is not None:
-            file.write(f'With diff constraint time {diff_constraint_time}\n')
-            file.write(f'With diff optimization time {diff_optimization_time}\n')
+            file.write(f'With diff constraint time {diff_constraint_time/args.count}\n')
+            file.write(f'With diff optimization time {diff_optimization_time/args.count}\n')
 
         file.close()                    
