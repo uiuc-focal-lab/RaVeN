@@ -33,6 +33,7 @@ class RaVeN:
         self.baseline_verified_props = 0
         self.noise_ind = baseline_results[0].noise_ind
         if self.args.dataset == Dataset.HOUSING:
+            print('hi')
             self.monotone_lp = False
         else:
             self.monotone_lp = True
