@@ -285,18 +285,53 @@ class RavenResultList:
         filename = args.output_dir + f'{args.net_name}_{args.count_per_prop}_{args.count}_{args.eps}.dat'
         file = open(filename, 'a+')
         times = 0
+        num_split = args.monotone_splits
+        cur_i = 0
+        cur_status = True
+        min_val = 10
+        #print([res.UAP_res.status == Status.VERIFIED for res in self.result_list])
         for i, res in enumerate(self.result_list):
             #file.write(f'\nProperty No. {i}\n\n')
-            raven_res = res.raven_res
-            if raven_res.status == Status.VERIFIED:
-                diff_verified_count += 1
             times += res.times
+            UAP_res = res.UAP_res
+            if UAP_res.status != Status.VERIFIED:
+                #diff_verified_count += 1
+                cur_status = False
+                min_val = UAP_res.global_lb
+                cur_i = num_split - 1
+            cur_i += 1
+            if cur_i == num_split:
+                if cur_status:
+                    diff_verified_count += 1
+                print(min_val)
+                cur_i = 0
+                cur_status = True
+                min_val = 10
         file.write(f'\n\n\nProp : {args.monotone_prop}\n')
         file.write(f'\n\n\nEps : {args.eps}\n')
         file.write(f'Diff verified: {diff_verified_count}\n')
         file.write(f'Time: {times}')
         # file.write(f'LP verified: {lp_verified_count}\n')
-        file.close()  
+        file.close() 
+
+    # def analyze_monotone(self, args):
+    #     diff_verified_count = 0
+    #     # lp_verified_count = 0
+    #     filename = args.output_dir + f'{args.net_name}_{args.count_per_prop}_{args.count}_{args.eps}.dat'
+    #     file = open(filename, 'a+')
+    #     times = 0
+    #     for i, res in enumerate(self.result_list):
+    #         #file.write(f'\nProperty No. {i}\n\n')
+    #         raven_res = res.raven_res
+    #         if raven_res.status == Status.VERIFIED:
+    #             diff_verified_count += 1
+    #         times += res.times
+    #     file.write(f'\n\n\nProp : {args.monotone_prop}\n')
+    #     file.write(f'\n\n\nEps : {args.eps}\n')
+    #     file.write(f'Diff verified: {diff_verified_count}\n')
+    #     file.write(f'Time: {times}')
+    #     # file.write(f'LP verified: {lp_verified_count}\n')
+    #     file.close()  
         
     def analyze_targeted(self, args):
         count = args.count

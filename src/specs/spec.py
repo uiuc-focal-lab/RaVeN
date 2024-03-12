@@ -250,7 +250,7 @@ def remove_unclassified_images(inputs, labels, dataset, net_name):
 
 def get_specs(dataset, spec_type=InputSpecType.LINF, eps=0.01, count=None, 
               sink_label=None, debug_mode=False, monotone_prop = None, 
-              monotone_inv = False, try_input_smoothing=False, count_per_prop=None,
+              monotone_inv = False, monotone_splits = 1, try_input_smoothing=False, count_per_prop=None,
               net_name=''):
     if debug_mode == True:
         return generate_debug_specs(count=count, eps=eps)
@@ -315,7 +315,7 @@ def get_specs(dataset, spec_type=InputSpecType.LINF, eps=0.01, count=None,
         test_labels = test_dataset.pop('HousePrice')
         test_dataset, test_labels = torch.tensor(np.array(test_dataset), dtype = torch.float32), torch.tensor(np.array(test_labels), dtype = torch.float32)
         test_dataset, test_labels = test_dataset[:count].reshape(count, 1, 12), test_labels[:count]
-        props = get_monotone_spec(test_dataset, test_labels, eps, dataset, monotone_prop = monotone_prop, monotone_inv = monotone_inv)
+        props = get_monotone_spec(test_dataset, test_labels, eps, dataset, monotone_prop = monotone_prop, monotone_inv = monotone_inv, monotone_splits = monotone_splits)
         #props = get_linf_spec_test(test_dataset, test_labels, eps, dataset)
         #props = get_linf_spec_test(test_dataset, test_labels, eps, dataset)
         return props, test_dataset
@@ -389,7 +389,7 @@ def get_specs(dataset, spec_type=InputSpecType.LINF, eps=0.01, count=None,
         test_labels = labels.iloc[num_train:]
         test_data, test_labels = torch.tensor(np.array(test_data), dtype = torch.float32), torch.tensor(np.array(test_labels), dtype = torch.float32)
         test_data, test_labels = test_data[:count].reshape(count, 1, 87), test_labels[:count]
-        props = get_monotone_spec(test_data, test_labels, eps, dataset, monotone_prop = monotone_prop, monotone_inv = monotone_inv)
+        props = get_monotone_spec(test_data, test_labels, eps, dataset, monotone_prop = monotone_prop, monotone_inv = monotone_inv, monotone_splits = monotone_splits)
         return props, test_data
 
     elif dataset == Dataset.ACAS:
@@ -425,7 +425,7 @@ def generate_debug_specs(count=2, eps=1.0):
         props.append(Property(ilb, iub, InputSpecType.LINF, out_constr, dataset='dataset', input=input))
     return props, inputs
 
-def get_monotone_spec(inputs, labels, eps, dataset, monotone_prop = None, monotone_inv = False):
+def get_monotone_spec(inputs, labels, eps, dataset, monotone_prop = None, monotone_inv = False, monotone_splits = 1):
     properties = []
 
     for i in range(len(inputs)):
@@ -436,16 +436,7 @@ def get_monotone_spec(inputs, labels, eps, dataset, monotone_prop = None, monoto
         ilb = image.clone()
         iub = image.clone()
         # iub[:, monotone_prop] += eps
-        ilb[:, 0] -= eps 
-        ilb[:, 2] -= eps
-        ilb[:, 3] -= eps
-        ilb[:, 4] -= eps
-        ilb[:, 5] -= eps
-        iub[:, 0] += eps 
-        iub[:, 2] += eps
-        iub[:, 3] += eps
-        iub[:, 4] += eps
-        iub[:, 5] += eps
+        iub[:, monotone_prop] += eps
         # [0, 2, 3, 4, 5]
         # ilb[:, monotone_prop] -= eps
         # mean, std = get_mean_std(dataset)
@@ -470,12 +461,14 @@ def get_monotone_spec(inputs, labels, eps, dataset, monotone_prop = None, monoto
         base = image.reshape(-1)
         out_constr = Constraint(OutSpecType.MONOTONE, label = labels[i])
         #print(monotone_inv)
-        if monotone_inv:
+
+        
+        for i in range(monotone_splits):
+            iub = ilb.clone()
+            iub[monotone_prop] += eps/ monotone_splits
             properties.append(Property(ilb, iub, InputSpecType.LINF, out_constr, dataset, input=image, monotone = True, monotone_prop = monotone_prop))
             properties.append(Property(ilb, iub, InputSpecType.LINF, out_constr, dataset, input=image, monotone = True, monotone_prop = monotone_prop))
-        else:
-            properties.append(Property(ilb, iub, InputSpecType.LINF, out_constr, dataset, input=image, monotone = True, monotone_prop = monotone_prop))
-            properties.append(Property(ilb, iub, InputSpecType.LINF, out_constr, dataset, input=image, monotone = True, monotone_prop = monotone_prop))
+            ilb = iub.clone()
     
 
     return properties

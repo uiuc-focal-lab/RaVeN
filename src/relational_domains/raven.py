@@ -32,6 +32,7 @@ class RaVeN:
         self.baseline_verified_props = 0
         self.noise_ind = baseline_results[0].noise_ind
         self.monotone_lp = False
+        self.monotone_splits = self.args.monotone_splits
 
     # Running DiffPoly for each pair of inputs.
     def compute_difference_dict(self, monotone = False):
@@ -50,7 +51,7 @@ class RaVeN:
                                 lb_input1=input1_lbs, ub_input1=input1_ubs,
                                 lb_input2=input2_lbs, ub_input2=input2_ubs, device='cpu', 
                                 noise_ind = self.noise_ind, eps = self.eps, 
-                                monotone = monotone, monotone_prop = self.args.monotone_prop, use_all_layers=self.args.all_layer_sub, 
+                                monotone = monotone, monotone_prop = self.args.monotone_prop, monotone_splits = self.monotone_splits, use_all_layers=self.args.all_layer_sub, 
                                 lightweight_diffpoly=self.args.lightweight_diffpoly)
                     delta_lbs, delta_ubs = diff_poly_ver.run()
                 self.difference_lbs_dict[(i, j)] = delta_lbs
