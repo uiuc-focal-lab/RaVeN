@@ -107,18 +107,10 @@ class RaVeNMILPtransformer:
             if self.gmdl.status == 4:
                 return 0.0
             elif self.gmdl.status in [9, 11, 13]:
-                print("Final MIP gap value: %f" % self.gmdl.MIPGap)
-                try:
-                    print("Final MIP best value: %f" % p.X)
-                except:
-                    print("No solution obtained")
-                print("Final ObjBound: %f" % self.gmdl.ObjBound)
                 if self.gmdl.SolCount > 0:
                     return self.gmdl.ObjBound
                 else:
                     return 0.0
-            print("Gurobi model status", self.gmdl.status)
-            print("The optimization failed\n")
             return 0.0
 
     # MILP optimization for targeted UAP.
