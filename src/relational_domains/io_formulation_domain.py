@@ -105,7 +105,7 @@ class IOFormulation:
                 temp_prop_mins = []
                 for i, input_coefs in enumerate(actual_coefs):
                     input_coefs = input_coefs.detach().numpy()
-                    temp_prop_mins = prop_mins.append((input_coefs @ epsilons + lbs[i])[j])
+                    temp_prop_mins.append((input_coefs @ epsilons + lbs[i])[j])
                     self.model.update()
                 self.target_prop_mins.append(temp_prop_mins)
 
