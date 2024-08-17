@@ -50,7 +50,13 @@ class RaVeNMILPtransformer:
         self.linear_layer_idx = -1 
 
         # Gurobi model and variables.
-        self.gmdl = grb.Model()
+        options = {
+                    "WLSACCESSID": "1176fdd0-0460-444a-bb42-62248b5e5d5e",
+                    "WLSSECRET": "c7bb8b34-13d5-4e91-a32a-7973a0bf7d93",
+                    "LICENSEID": 2530344,
+        }
+        env = grb.Env(params=options)
+        self.gmdl = grb.Model(env=env)
         self.gurobi_variables = []
         self.gurobi_var_dict = {}
         self.debug = True
@@ -597,7 +603,8 @@ class RaVeNMILPtransformer:
     def create_vars(self, layer_idx, layer_type=''):
         ds = None
         if layer_type in ['linear', 'conv2d']:            
-            vs = [self.gmdl.addMVar(self.x_lbs[i][layer_idx].shape[0], lb = self.x_lbs[i][layer_idx], ub = self.x_ubs[i][layer_idx], vtype=grb.GRB.CONTINUOUS, name=f'layer_{layer_idx}_{layer_type}_x{i}') for i in range(self.batch_size)]
+            vs = [self.gmdl.addMVar(self.x_lbs[i][layer_idx].shape[0], lb = self.x_lbs[i][layer_idx].detach().numpy(), 
+                                    ub = self.x_ubs[i][layer_idx].detach().numpy(), vtype=grb.GRB.CONTINUOUS, name=f'layer_{layer_idx}_{layer_type}_x{i}') for i in range(self.batch_size)]
             if self.track_differences is True:
                 ds = [[self.gmdl.addMVar(self.d_lbs[(i, j)][layer_idx].shape[0], 
                                          lb=self.d_lbs[(i, j)][layer_idx] - self.tolerence, 
@@ -606,8 +613,8 @@ class RaVeNMILPtransformer:
                                          for j in range(i+1, self.batch_size)] 
                                          for i in range(self.batch_size)]
         elif layer_type == 'relu':
-            vs = [self.gmdl.addMVar(self.x_lbs[i][layer_idx].shape[0], lb=self.x_lbs[i][layer_idx],
-                                     ub = self.x_ubs[i][layer_idx], vtype=grb.GRB.CONTINUOUS, 
+            vs = [self.gmdl.addMVar(self.x_lbs[i][layer_idx].shape[0], lb=self.x_lbs[i][layer_idx].detach().numpy(),
+                                     ub = self.x_ubs[i][layer_idx].detach().numpy(), vtype=grb.GRB.CONTINUOUS, 
                                      name=f'layer_{layer_idx}_{layer_type}_x{i}') for i in range(self.batch_size)]
             if self.track_differences is True:
                 if self.args is not None and self.args.all_layer_sub is True:
@@ -651,7 +658,10 @@ class RaVeNMILPtransformer:
         vs, ds = self.create_vars(layer_idx, 'linear')
         
         for v_idx, v in enumerate(vs):
-            self.gmdl.addConstr(v == weight @ self.gurobi_variables[-1]['vs'][v_idx] + bias)
+            try:
+                self.gmdl.addConstr(v == weight @ self.gurobi_variables[-1]['vs'][v_idx] + bias)
+            except:
+                import pdb; pdb.set_trace()
 
         if self.track_differences is True:
             for i in range(self.batch_size):

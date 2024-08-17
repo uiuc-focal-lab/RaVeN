@@ -64,9 +64,8 @@ class RelationalVerifierBackendWrapper:
     # Untargeted UAP and worst-case hamming distance verification.
     def run_untargeted_uap(self) -> RavenResult:
         start_time = time.time()
-        with torch.no_grad():
-            baseline_verfier = BaselineAnalyzerBackend(props=self.props, net=self.net, args=self.args)
-            individual_verification_results = baseline_verfier.run()
+        baseline_verfier = BaselineAnalyzerBackend(props=self.props, net=self.net, args=self.args)
+        individual_verification_results = baseline_verfier.run()
         individual_time = time.time() - start_time
 
         start_time = time.time()

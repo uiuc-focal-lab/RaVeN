@@ -350,7 +350,6 @@ class DeepPolyTransformerOptimized:
         # print(f'diff: {self.ubs[-1] - self.lbs[-1]}')
 
         lb_debug, _ = self.concrete_substitution(diff_struct=diff_struct, lb_layer=self.ilb, ub_layer=self.iub)
-
         return BaselineVerifierRes(input=self.prop.input, layer_lbs=self.lbs, layer_ubs=self.ubs, final_lb=final_lb, 
                                    final_ub = final_ub, lb_bias=diff_struct.lb_bias, lb_coef=diff_struct.lb_coef, 
                                    eps=self.eps, last_conv_diff_struct=self.last_conv_diff_struct)

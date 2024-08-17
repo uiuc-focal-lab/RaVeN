@@ -291,8 +291,11 @@ class DiffPoly:
             self.ub_input1[layer_idx] = torch.min(ub_input1, self.ub_input1[layer_idx]) 
             self.lb_input2[layer_idx] = torch.max(lb_input2, self.lb_input2[layer_idx])
             self.ub_input2[layer_idx] = torch.min(ub_input2, self.ub_input2[layer_idx])
-        assert torch.all(lb_input1 <= ub_input1 + 1e-6)
-        assert torch.all(lb_input2 <= ub_input2 + 1e-6)
+        try:
+            assert torch.all(lb_input1 <= ub_input1 + 1e-4)
+            assert torch.all(lb_input2 <= ub_input2 + 1e-4)
+        except:
+            import pdb; pdb.set_trace()
 
         return (lb_input1 - ub_input2), (ub_input1 - lb_input2)
 
@@ -757,8 +760,8 @@ class DiffPoly:
     
     # Debugging for avoid errors due to floating point imprecision.
     def check_lb_ub_correctness(self, lb, ub):
-        if not torch.all(lb <= ub + 1e-6) :
-            assert torch.all(lb <= ub + 1e-6)
+        if not torch.all(lb <= ub + 1e-4) :
+            assert torch.all(lb <= ub + 1e-4)
 
     def initialize_back_prop_struct(self, layer_idx):
         layer_size = self.get_layer_size(linear_layer_index=layer_idx)

@@ -21,6 +21,7 @@ from src.common.dataset import Dataset
 from src.common import Domain
 from src.domains.deepz import ZonoTransformer
 from src.domains.deeppoly import DeepPolyTransformerOptimized
+from src.domains.lirpaDomain import LirpaTransformer
 from src.common.network import LayerType, Layer
 from src.network_converters.binary_model_loader import load_model
 
@@ -308,10 +309,8 @@ def get_domain_builder(domain):
         return DeepPolyTransformerOptimized
     if domain == Domain.DEEPZ:
         return ZonoTransformer
-    if domain == Domain.BOX:
-        return BoxTransformer
-    if domain == Domain.LP:
-        return LPTransformer
+    if domain == Domain.LIRPA:
+        return LirpaTransformer
     raise ValueError("Unexpected domain!")
 
 

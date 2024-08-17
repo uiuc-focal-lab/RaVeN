@@ -6,15 +6,20 @@ from torch.nn import ReLU, Linear, Conv2d, Sigmoid, Tanh
 
 from onnx import numpy_helper
 from src.common.network import Layer, LayerType, Network
+from src.domains.lirpaDomain import LirpaTransformer
 
 
 def get_transformer(transformer, net, prop, relu_mask=None):
+    if  type(transformer) is LirpaTransformer:
+        return handle_lirpa_domain(net=net, transformer=transformer)
 
     # For all abstraction based domains (all other domains than lp)
     transformer = forward_layers(net, relu_mask, transformer)
 
     return transformer
 
+def handle_lirpa_domain(net, transformer):
+    return transformer.handle_prop(net)
 
 def forward_layers(net, relu_mask, transformers):
     for layer in net:
