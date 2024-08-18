@@ -92,7 +92,9 @@ class DiffPoly:
         self.linear_conv_layer_indices = []
         self.device = device
         self.noise_ind  = noise_ind
-        self.eps = eps
+        # self.eps = eps
+        self.debug_file = f'debug_file.txt'
+        self.eps = None
         self.monotone = monotone
         self.monotone_splits = monotone_splits
         self.use_all_layers = use_all_layers
@@ -1039,6 +1041,12 @@ class DiffPoly:
             curr_delta_ub = torch.min(brute_delta_ub, curr_delta_ub)
             delta_lbs.append(curr_delta_lb)
             delta_ubs.append(curr_delta_ub)
+            # with open(self.debug_file, "a+") as file:
+            #     file.write(f"brute lower delta bnd {layer_idx}\n{brute_delta_lb}\n\n")            
+            #     file.write(f"brute upper delta bnd {layer_idx}\n{brute_delta_ub}\n\n")
+            #     file.write(f"lower delta bnd {layer_idx}\n{delta_lbs[-1]}\n\n")            
+            #     file.write(f"upper delta bnd {layer_idx}\n{delta_ubs[-1]}\n\n")
+            #     file.write(f"max ration {torch.max((brute_delta_ub - brute_delta_lb) / (delta_ubs[-1] - delta_lbs[-1] + 1e-8))}\n")
             if self.lightweight_diffpoly is True:
                 break
 

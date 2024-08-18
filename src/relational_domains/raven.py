@@ -23,7 +23,7 @@ class RaVeN:
         self.difference_lbs_dict = {}
         self.difference_ubs_dict = {}
         self.input_list = []
-        self.eps = args.eps
+        self.eps = baseline_results[0].eps
         self.input_lbs = []
         self.input_ubs = []
         self.constr_matrices = []

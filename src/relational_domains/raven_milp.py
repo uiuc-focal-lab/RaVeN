@@ -41,6 +41,7 @@ class RaVeNMILPtransformer:
             self.input_size = xs[0].shape[0]
             self.set_shape()
         self.eps = eps
+        print(f"eps {self.eps}")
         self.x_lbs = x_lbs
         self.x_ubs = x_ubs
         self.d_lbs = d_lbs
@@ -240,8 +241,8 @@ class RaVeNMILPtransformer:
         # The uap perturbation.
         if len(self.xs) <= 0:
             return
-        delta = self.gmdl.addMVar(self.xs[0].shape[0], lb = -self.eps, ub = self.eps, vtype=grb.GRB.CONTINUOUS, name='uap_delta')
-        vs = [self.gmdl.addMVar(self.xs[i].shape[0], lb = self.xs[i].detach().numpy() - self.eps, ub = self.xs[i].detach().numpy() + self.eps, vtype=grb.GRB.CONTINUOUS, name=f'input_{i}') for i in range(self.batch_size)]
+        delta = self.gmdl.addMVar(self.xs[0].shape[0], lb = -self.eps, ub =self.eps.item(), vtype=grb.GRB.CONTINUOUS, name='uap_delta')
+        vs = [self.gmdl.addMVar(self.xs[i].shape[0], lb = self.xs[i].detach().numpy() -self.eps.item(), ub = self.xs[i].detach().numpy() +self.eps.item(), vtype=grb.GRB.CONTINUOUS, name=f'input_{i}') for i in range(self.batch_size)]
         # Ensure all inputs are perturbed by the same uap delta.
         for i, v in enumerate(vs):
             self.gmdl.addConstr(v == self.xs[i].detach().numpy() + delta)              
@@ -297,8 +298,8 @@ class RaVeNMILPtransformer:
 
     def create_variables(self):
         # Input constraint variables.
-        delta = self.gmdl.addMVar(self.xs[0].shape[0], lb = -self.eps, ub = self.eps, vtype=grb.GRB.CONTINUOUS, name='uap_delta')
-        vs = [self.gmdl.addMVar(self.xs[i].shape[0], lb = self.xs[i].detach().numpy() - self.eps, ub = self.xs[i].detach().numpy() + self.eps, vtype=grb.GRB.CONTINUOUS, name=f'input_{i}') for i in range(self.batch_size)]
+        delta = self.gmdl.addMVar(self.xs[0].shape[0], lb = -self.eps, ub =self.eps.item(), vtype=grb.GRB.CONTINUOUS, name='uap_delta')
+        vs = [self.gmdl.addMVar(self.xs[i].shape[0], lb = self.xs[i].detach().numpy() -self.eps.item(), ub = self.xs[i].detach().numpy() +self.eps.item(), vtype=grb.GRB.CONTINUOUS, name=f'input_{i}') for i in range(self.batch_size)]
         self.gurobi_var_dict[-1] = {'delta': delta, 'vs': vs, 'ds': None}
 
         # Layer constraint variables.

@@ -13,7 +13,7 @@ class LirpaTransformer:
         self.iub = prop.input_ub
         self.eps = torch.max(self.iub - self.ilb) / 2.0
         self.input = prop.input
-        self.base_method = 'CROWN'
+        self.base_method = 'CROWN-Optimized'
         self.lbs = []
         self.ubs = []
         self.input_name = None
@@ -47,7 +47,8 @@ class LirpaTransformer:
         assert last_name is not None
         self.last_name = last_name
     
-    def proceed_bound_propagation_output(self, bounded_model, lower_bnd, A_dict):
+    def proceed_bound_propagation_output(self, bounded_model, lower_bnd, 
+                                         A_dict, final_lower_bnd=None, final_upper_bnd=None):
         i = 0
         supported_operators = [BoundConv, BoundLinear, BoundRelu]
         for node_name, node in bounded_model._modules.items():
@@ -62,11 +63,16 @@ class LirpaTransformer:
                 else:
                     assert min(len(self.lbs), len(self.ubs)) > 0
                     self.lbs.append(torch.zeros(self.lbs[-1].shape, device=self.lbs[-1].device).reshape(-1))
-                    self.ubs.append(self.ubs[-1].reshape(-1))
-        negative_inf = torch.zeros(self.number_of_class, device=self.lbs[-1].device).fill_(float('-inf'))
-        positive_inf = torch.zeros(self.number_of_class, device=self.lbs[-1].device).fill_(float('-inf'))
-        self.lbs.append(negative_inf)
-        self.ubs.append(positive_inf)
+                    self.ubs.append(torch.max(self.ubs[-1], torch.zeros_like(self.ubs[-1], device=self.ubs[-1].device)).reshape(-1))
+            # import pdb; pdb.set_trace()
+        if final_lower_bnd is None or final_upper_bnd is None:
+            negative_inf = torch.zeros(self.number_of_class, device=self.lbs[-1].device).fill_(float('-inf'))
+            positive_inf = torch.zeros(self.number_of_class, device=self.lbs[-1].device).fill_(float('-inf'))
+            self.lbs.append(negative_inf)
+            self.ubs.append(positive_inf)
+        else:
+            self.lbs.append(final_lower_bnd)
+            self.ubs.append(final_upper_bnd)
         self.lbs.append(self.ilb.reshape(-1))
         self.ubs.append(self.iub.reshape(-1))
         lA = A_dict[self.last_name][self.input_name]['lA'].squeeze().reshape(self.number_of_class-1, -1)
@@ -93,10 +99,20 @@ class LirpaTransformer:
         constraint_matrix = self.prop.output_constr_mat().T
         if len(constraint_matrix.shape) < 3:
             constraint_matrix = constraint_matrix.reshape(1, *constraint_matrix.shape)
+        # first extract upper and lower bound of final layer
+        result = bounded_model.compute_bounds(x=(bounded_images,), method=self.base_method, C=None,
+                                        bound_upper=True, return_A=True, needed_A_dict=coef_dict)
+        final_lower_bnd, final_upper_bnd, _ = result
+        if len(final_lower_bnd.shape) > 1:
+            final_lower_bnd = final_lower_bnd.squeeze()
+        if len(final_upper_bnd.shape) > 1:
+            final_upper_bnd = final_upper_bnd.squeeze()
+        
         result = bounded_model.compute_bounds(x=(bounded_images,), method=self.base_method, C=constraint_matrix,
                                         bound_upper=False, return_A=True, needed_A_dict=coef_dict)
         lower_bnd, upper, A_dict = result
-        self.proceed_bound_propagation_output(bounded_model=bounded_model, lower_bnd=lower_bnd, A_dict=A_dict)
+        self.proceed_bound_propagation_output(bounded_model=bounded_model, lower_bnd=lower_bnd, A_dict=A_dict,
+                                              final_lower_bnd=final_lower_bnd, final_upper_bnd=final_upper_bnd)
         return self
 
 

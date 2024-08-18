@@ -15,9 +15,10 @@ class RaVeNArgs:
                  radius_r=0.3, uap_mode=RavenMode.UAP, cutoff_percentage = 0.5,
                  compute_proportion=True, no_lp_for_verified=True, write_file = False, 
                  debug_mode=False, track_differences=True, enable_ablation = False,
-                 monotone_prop = None, monotone_inv = False, lp_formulation_threshold=2, 
+                 monotone_prop = None, monotone_inv = False, lp_formulation_threshold=3, 
                  try_image_smoothing=False, filter_threshold=None, 
-                 fold_conv_layers=False, ligweight_diffpoly=False, monotone_splits = 1, monotone_lp = False) -> None:
+                 fold_conv_layers=False, ligweight_diffpoly=False,
+                 monotone_splits = 1, monotone_lp = False, device='cpu') -> None:
 
         # Individual verification Domain e.g. DeepZ, DeepPoly, etc (see src/common/__init__.py).
         self.individual_prop_domain = individual_prop_domain
@@ -65,6 +66,7 @@ class RaVeNArgs:
         self.lightweight_diffpoly = ligweight_diffpoly
         self.monotone_splits = monotone_splits
         self.monotone_lp = monotone_lp
+        self.device = device
         # if debug mode on rewrite params.
         if debug_mode == True:
             self.count = 1

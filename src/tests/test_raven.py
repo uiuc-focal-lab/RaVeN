@@ -18,9 +18,10 @@ class TestUntargetedUapSmall(TestCase):
         raven_verfication_args = raven_args.RaVeNArgs(
                 individual_prop_domain=Domain.DEEPPOLY,
                 domain=Domain.RAVEN, baseline_domain=Domain.IOFORMULATION, dataset=Dataset.MNIST,
-                spec_type=InputSpecType.UAP, count=20, count_per_prop=5, eps=0.14, 
+                spec_type=InputSpecType.UAP, count=20, count_per_prop=10, eps=0.13, 
                 net=config.MNIST_CONV_SMALL_DIFFAI, timeout=300, output_dir='pldi-results/',
-                uap_mode=raven_args.RavenMode.UAP, compute_proportion=True, write_file=True)
+                uap_mode=raven_args.RavenMode.UAP, compute_proportion=True, write_file=True,
+                enable_ablation=True)
         relational_ver.RelationalVerification(raven_verfication_args)
 
     # Untargeted UAP for IBPSmall MNIST Network.
@@ -28,7 +29,7 @@ class TestUntargetedUapSmall(TestCase):
         raven_verfication_args = raven_args.RaVeNArgs(
                 individual_prop_domain=Domain.DEEPZ,
                 domain=Domain.RAVEN, baseline_domain=Domain.IOFORMULATION, dataset=Dataset.MNIST,
-                spec_type=InputSpecType.UAP, count=20, count_per_prop=5, eps=0.12, 
+                spec_type=InputSpecType.UAP, count=1, count_per_prop=5, eps=0.12, 
                 net=config.MNIST_CROWN_IBP, timeout=300, output_dir='pldi-results/',
                 uap_mode=raven_args.RavenMode.UAP, compute_proportion=True, write_file=True)
         relational_ver.RelationalVerification(raven_verfication_args)
