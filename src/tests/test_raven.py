@@ -16,9 +16,9 @@ class TestUntargetedUapSmall(TestCase):
     # Untargeted UAP for ConvSmall MNIST DIFFAI Network.
     def test_convsmall_diffai_mnist(self):
         raven_verfication_args = raven_args.RaVeNArgs(
-                individual_prop_domain=Domain.LIRPA,
+                individual_prop_domain=Domain.DEEPZ,
                 domain=Domain.RAVEN, baseline_domain=Domain.IOFORMULATION, dataset=Dataset.MNIST,
-                spec_type=InputSpecType.UAP, count=2, count_per_prop=5, eps=0.13, 
+                spec_type=InputSpecType.UAP, count=20, count_per_prop=10, eps=0.13, 
                 net=config.MNIST_CONV_SMALL_DIFFAI, timeout=300, output_dir='pldi-results/',
                 uap_mode=raven_args.RavenMode.UAP, compute_proportion=True, write_file=True,
                 enable_ablation=True, device='cuda:1')

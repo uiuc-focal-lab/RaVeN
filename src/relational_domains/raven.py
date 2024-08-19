@@ -80,10 +80,14 @@ class RaVeN:
     def shift_to_cpu(self):
         for input in self.input_list:
             input = input.cpu()
+        new_lbs = []
         for lb in self.input_lbs:
-            lb = shift_list_device(lb, 'cpu')
+            new_lbs.append(shift_list_device(lb, 'cpu'))
+        self.input_lbs = new_lbs
+        new_ubs = []
         for ub in self.input_ubs:
-            ub = shift_list_device(ub, 'cpu')
+            new_ubs.append(shift_list_device(ub, 'cpu'))
+        self.input_ubs = new_ubs
         for mat in self.constr_matrices:
             mat = mat.cpu()
         for key in self.difference_lbs_dict.keys():

@@ -8,7 +8,8 @@ from src.baseline_res import BaselineVerifierRes
 class LirpaTransformer:
     def __init__(self, prop, complete=False, device=None, args=None):
         self.prop = prop
-        self.device = device if device is not None else 'cpu'
+        self.args = args
+        self.device = device if self.args.device is not None else 'cpu'
         self.ilb = prop.input_lb
         self.iub = prop.input_ub
         self.eps = torch.max(self.iub - self.ilb) / 2.0
@@ -34,6 +35,11 @@ class LirpaTransformer:
         elif self.size == 87:
             self.shape = (1, 1, 87)
             self.number_of_class = None
+    
+    def shift_to_device(self):
+        self.ilb = self.ilb.to(self.device)
+        self.iub = self.iub.to(self.device)
+        self.input = self.input.to(self.device)
     
     def get_output_layer_name(self, bounded_model):
         i = 0
@@ -85,6 +91,8 @@ class LirpaTransformer:
 
     def handle_prop(self, net):
         torch_net = get_pytorch_net(model=net, remove_last_layer=False, all_linear=False)
+        # shift the network to the specified device
+        torch_net = torch_net.to(self.device)
         rand_input = torch.rand(self.shape)
         if len(rand_input.shape) < 4:
             rand_input = rand_input.view(1, *rand_input.shape)
@@ -97,6 +105,8 @@ class LirpaTransformer:
         bounded_images = BoundedTensor(self.input, ptb)
         coef_dict = { self.last_name: [self.input_name]}
         constraint_matrix = self.prop.output_constr_mat().T
+        # shift the constraint matrix to the specified device
+        constraint_matrix = constraint_matrix.to(self.device)
         if len(constraint_matrix.shape) < 3:
             constraint_matrix = constraint_matrix.reshape(1, *constraint_matrix.shape)
         # first extract upper and lower bound of final layer
