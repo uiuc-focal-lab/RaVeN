@@ -41,7 +41,6 @@ class RaVeNMILPtransformer:
             self.input_size = xs[0].shape[0]
             self.set_shape()
         self.eps = eps
-        print(f"eps {self.eps}")
         self.x_lbs = x_lbs
         self.x_ubs = x_ubs
         self.d_lbs = d_lbs

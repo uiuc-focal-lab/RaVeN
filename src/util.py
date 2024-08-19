@@ -409,6 +409,18 @@ def compute_input_shapes(net, input_shape):
 
     return shapes
 
+def shift_list_device(tensor_list, device):
+    new_tensor_list = []
+    for t in tensor_list:
+        t = t.to(device)
+        new_tensor_list.append(t)
+    return new_tensor_list
+
+
+def shift_network_device(net, device):
+    for layer in net:
+        layer = layer.to(device)
+    return net
 
 def log_memory_usage():
     mu = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss

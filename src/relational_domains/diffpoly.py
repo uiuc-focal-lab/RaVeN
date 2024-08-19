@@ -1,7 +1,7 @@
 import torch
 import torch.nn.functional as F
 from src.common.network import LayerType
-from src.util import compute_input_shapes
+from src.util import compute_input_shapes, shift_network_device, shift_list_device
 
 
 # Basic deep poly struct.  
@@ -81,7 +81,7 @@ class DiffPoly:
         elif self.input1.shape[0] == 87:
             self.input_shape = (1, 1, 87)
         else:
-            raise ValueError(f"Unrecognised input shape {self.input_shape}")
+            raise ValueError(f"Unrecognized input shape {self.input_shape}")
         self.net = net
         self.lb_input1 = lb_input1
         self.ub_input1 = ub_input1
@@ -100,7 +100,17 @@ class DiffPoly:
         self.use_all_layers = use_all_layers
         self.lightweight_diffpoly = lightweight_diffpoly
         self.monotone_prop = monotone_prop
+        self.shift_to_device()
 
+    def shift_to_device(self):
+        self.input1 = self.input1.to(self.device)
+        self.input2 = self.input2.to(self.device)
+        self.lb_input1 = shift_list_device(self.lb_input1, self.device)
+        self.ub_input1 = shift_list_device(self.ub_input1, self.device)
+        self.lb_input2 = shift_list_device(self.lb_input2, self.device)
+        self.ub_input2 = shift_list_device(self.ub_input2, self.device)
+        self.diff = self.diff.to(self.device)
+        self.net = shift_network_device(self.net, self.device)
 
     # Transformer for fully connected linear/affine layers.
     def handle_linear(self, linear_wt, bias, back_prop_struct):
@@ -316,8 +326,11 @@ class DiffPoly:
 
         lb = neg_comp_lb @ delta_ub_layer + pos_comp_lb @ delta_lb_layer + back_prop_struct.delta_lb_bias
         if back_prop_struct.delta_lb_input1_coef is not None:
-            lb = lb + neg_comp_lb_input1 @ ub_input1_layer + pos_comp_lb_input1 @ lb_input1_layer    
-            lb = lb + neg_comp_lb_input2 @ ub_input2_layer + pos_comp_lb_input2 @ lb_input2_layer
+            try:
+                lb = lb + neg_comp_lb_input1 @ ub_input1_layer + pos_comp_lb_input1 @ lb_input1_layer    
+                lb = lb + neg_comp_lb_input2 @ ub_input2_layer + pos_comp_lb_input2 @ lb_input2_layer
+            except:
+                import pdb; pdb.set_trace()
 
         ub = neg_comp_ub @ delta_lb_layer + pos_comp_ub @ delta_ub_layer + back_prop_struct.delta_ub_bias
         if back_prop_struct.delta_lb_input1_coef is not None:
@@ -885,7 +898,7 @@ class DiffPoly:
         if self.monotone:
             if self.input_shape == (1, 1, 12):         
                 new_delta_lb, new_delta_ub = self.concretize_bounds(back_prop_struct=back_prop_struct,
-                                                                    delta_lb_layer=torch.zeros(12),#-self.eps * torch.nn.functional.one_hot(self.noise_ind[0], 12).flatten(),
+                                                                    delta_lb_layer=torch.zeros(12, device=self.device),#-self.eps * torch.nn.functional.one_hot(self.noise_ind[0], 12).flatten(),
                                                                     delta_ub_layer=self.eps*torch.torch.nn.functional.one_hot(torch.tensor(self.monotone_prop), 12).flatten(),
                                                                     lb_input1_layer=self.lb_input1[-1],
                                                                     ub_input1_layer=self.ub_input1[-1],
@@ -893,7 +906,7 @@ class DiffPoly:
                                                                     ub_input2_layer=self.ub_input2[-1])
             else:
                 new_delta_lb, new_delta_ub = self.concretize_bounds(back_prop_struct=back_prop_struct,
-                                                                    delta_lb_layer = torch.zeros(87),
+                                                                    delta_lb_layer = torch.zeros(87, device=self.device),
                                                                     delta_ub_layer = self.eps/self.monotone_splits * torch.nn.functional.one_hot(torch.tensor(self.monotone_prop), 87).flatten(),
                                                                     lb_input1_layer=self.lb_input1[-1],
                                                                     ub_input1_layer=self.ub_input1[-1],
@@ -972,7 +985,7 @@ class DiffPoly:
         if self.monotone:         
             if self.input_shape == (1, 1, 12):     
                 new_delta_lb, new_delta_ub = self.concretize_bounds(back_prop_struct=back_prop_struct,
-                                                                    delta_lb_layer=torch.zeros(12),#-self.eps * torch.nn.functional.one_hot(self.noise_ind[0], 12).flatten(),lb_input1_layer=self.lb_input1[-1],
+                                                                    delta_lb_layer=torch.zeros(12, device=self.device),#-self.eps * torch.nn.functional.one_hot(self.noise_ind[0], 12).flatten(),lb_input1_layer=self.lb_input1[-1],
                                                                     delta_ub_layer=self.eps*torch.torch.nn.functional.one_hot(torch.tensor(self.monotone_prop), 12).flatten(),
                                                                     lb_input1_layer=self.lb_input1[-1],
                                                                     ub_input1_layer=self.ub_input1[-1],
@@ -980,7 +993,7 @@ class DiffPoly:
                                                                     ub_input2_layer=self.ub_input2[-1])
             else:
                 new_delta_lb, new_delta_ub = self.concretize_bounds(back_prop_struct=back_prop_struct,
-                                                                    delta_lb_layer = torch.zeros(87),
+                                                                    delta_lb_layer = torch.zeros(87, device=self.device),
                                                                     delta_ub_layer = self.eps/self.monotone_splits * torch.nn.functional.one_hot(torch.tensor(self.monotone_prop), 87).flatten(),
                                                                     lb_input1_layer=self.lb_input1[-1],
                                                                     ub_input1_layer=self.ub_input1[-1],
