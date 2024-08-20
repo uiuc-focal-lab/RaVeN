@@ -309,7 +309,7 @@ def get_domain_builder(domain):
         return DeepPolyTransformerOptimized
     if domain == Domain.DEEPZ:
         return ZonoTransformer
-    if domain == Domain.LIRPA:
+    if domain in [Domain.LIRPA, Domain.LIRPA_ALPHA_CROWN]:
         return LirpaTransformer
     raise ValueError("Unexpected domain!")
 

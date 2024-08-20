@@ -16,7 +16,7 @@ class TestUntargetedUapSmall(TestCase):
     # Untargeted UAP for ConvSmall MNIST DIFFAI Network.
     def test_convsmall_diffai_mnist(self):
         raven_verfication_args = raven_args.RaVeNArgs(
-                individual_prop_domain=Domain.DEEPZ,
+                individual_prop_domain=Domain.LIRPA_ALPHA_CROWN,
                 domain=Domain.RAVEN, baseline_domain=Domain.IOFORMULATION, dataset=Dataset.MNIST,
                 spec_type=InputSpecType.UAP, count=20, count_per_prop=10, eps=0.13, 
                 net=config.MNIST_CONV_SMALL_DIFFAI, timeout=300, output_dir='pldi-results/',
@@ -37,11 +37,12 @@ class TestUntargetedUapSmall(TestCase):
     # Untargeted UAP for ConvSmall CIFAR10 DIFFAI Network.
     def test_convsmall_diffai_cifar10(self):
         raven_verfication_args = raven_args.RaVeNArgs(
-                individual_prop_domain=Domain.DEEPZ,
+                individual_prop_domain=Domain.LIRPA_ALPHA_CROWN,
                 domain=Domain.RAVEN, baseline_domain=Domain.IOFORMULATION, dataset=Dataset.CIFAR10,
-                spec_type=InputSpecType.UAP, count=20, count_per_prop=5, eps=6.0/255, 
-                net=config.CIFAR_CONV_DIFFAI, timeout=300, output_dir='pldi-results/',
-                uap_mode=raven_args.RavenMode.UAP, compute_proportion=True, write_file=True)
+                spec_type=InputSpecType.UAP, count=20, count_per_prop=10, eps=1.0/255, 
+                net=config.CIFAR_CONV_SMALL, timeout=300, output_dir='pldi-results/',
+                uap_mode=raven_args.RavenMode.UAP, compute_proportion=True, write_file=True, 
+                device='cuda:3', enable_ablation=True)
         relational_ver.RelationalVerification(raven_verfication_args)
 
     # Untargeted UAP for IBPSmall CIFAR10 Network.
@@ -145,11 +146,12 @@ class TestTargetedUap(TestCase):
     # Targeted UAP for ConvSmall CIFAR10 DIFFAI Network.
     def test_convsmall_diffai_cifar10(self):
         raven_verfication_args = raven_args.RaVeNArgs(
-                individual_prop_domain=Domain.DEEPZ,
+                individual_prop_domain=Domain.LIRPA_ALPHA_CROWN,
                 domain=Domain.RAVEN, baseline_domain=Domain.IOFORMULATION, dataset=Dataset.CIFAR10,
-                spec_type=InputSpecType.UAP_TARGETED, count=20, count_per_prop=5, eps=4.0/255, 
+                spec_type=InputSpecType.UAP_TARGETED, count=20, count_per_prop=10, eps=4.0/255, 
                 net=config.CIFAR_CONV_DIFFAI, timeout=300, output_dir='pldi-results/',
-                uap_mode=raven_args.RavenMode.TARGETED, compute_proportion=True, write_file=True)
+                uap_mode=raven_args.RavenMode.TARGETED, compute_proportion=True, write_file=True,
+                device='cuda:3')
         relational_ver.RelationalVerification(raven_verfication_args)
 
 
@@ -174,7 +176,7 @@ class TestWorstCaseHamming(TestCase):
         raven_verfication_args = raven_args.RaVeNArgs(
                 individual_prop_domain=Domain.DEEPPOLY,
                 domain=Domain.RAVEN, baseline_domain=Domain.IOFORMULATION, dataset=Dataset.MNIST,
-                spec_type=InputSpecType.UAP_BINARY, count=20, count_per_prop=20, eps=0.13, 
+                spec_type=InputSpecType.UAP_BINARY, count=3, count_per_prop=20, eps=0.13, 
                 net=config.MNIST_BINARY_PGD_SIGMOID, timeout=300, output_dir='pldi-results/',
                 uap_mode=raven_args.RavenMode.UAP, compute_proportion=True, write_file=True, 
                 lp_formulation_threshold=10)

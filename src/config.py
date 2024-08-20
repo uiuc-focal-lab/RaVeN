@@ -29,6 +29,8 @@ CIFAR_CROWN_IBP_BIG = "crown_cifar_cnn_3layer_fixed_kernel_3_width_1_best.pth"
 # CIFAR Networks
 # ConvSmall Diffai
 CIFAR_CONV_DIFFAI = "cifar10convSmallRELUDiffAI.onnx"
+# ConvSmall Standard
+CIFAR_CONV_SMALL = "convSmallRELU__Point.onnx"
 # ConvBig Diffai
 CIFAR_CONV_BIG = "cifar_convBigRELU__DiffAI.onnx"
 

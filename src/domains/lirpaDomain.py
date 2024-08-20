@@ -4,6 +4,7 @@ from src.network_converters.network_conversion_helper import get_pytorch_net
 from auto_LiRPA.operators import BoundLinear, BoundConv, BoundRelu
 from auto_LiRPA import BoundedModule, PerturbationLpNorm, BoundedTensor
 from src.baseline_res import BaselineVerifierRes
+from src.common import Domain
 
 class LirpaTransformer:
     def __init__(self, prop, complete=False, device=None, args=None):
@@ -14,7 +15,9 @@ class LirpaTransformer:
         self.iub = prop.input_ub
         self.eps = torch.max(self.iub - self.ilb) / 2.0
         self.input = prop.input
-        self.base_method = 'CROWN-Optimized'
+        # I/O formulation uses crown as the individual verifier.
+        self.base_method_io_formulation = 'CROWN'
+        self.raven_domain = 'CROWN' if args.individual_prop_domain == Domain.LIRPA else 'CROWN-Optimized'
         self.lbs = []
         self.ubs = []
         self.input_name = None
@@ -108,19 +111,22 @@ class LirpaTransformer:
         # shift the constraint matrix to the specified device
         constraint_matrix = constraint_matrix.to(self.device)
         if len(constraint_matrix.shape) < 3:
-            constraint_matrix = constraint_matrix.reshape(1, *constraint_matrix.shape)
+            constraint_matrix = constraint_matrix.reshape(1, *constraint_matrix.shape)        
+        result = bounded_model.compute_bounds(x=(bounded_images,), method=self.base_method_io_formulation, C=constraint_matrix,
+                                        bound_upper=False, return_A=True, needed_A_dict=coef_dict)
+        lower_bnd, upper, A_dict = result
         # first extract upper and lower bound of final layer
-        result = bounded_model.compute_bounds(x=(bounded_images,), method=self.base_method, C=None,
+        result = bounded_model.compute_bounds(x=(bounded_images,), method=self.raven_domain, C=None,
                                         bound_upper=True, return_A=True, needed_A_dict=coef_dict)
         final_lower_bnd, final_upper_bnd, _ = result
         if len(final_lower_bnd.shape) > 1:
             final_lower_bnd = final_lower_bnd.squeeze()
         if len(final_upper_bnd.shape) > 1:
             final_upper_bnd = final_upper_bnd.squeeze()
-        
-        result = bounded_model.compute_bounds(x=(bounded_images,), method=self.base_method, C=constraint_matrix,
-                                        bound_upper=False, return_A=True, needed_A_dict=coef_dict)
-        lower_bnd, upper, A_dict = result
+        if self.raven_domain == 'CROWN-Optimized':
+            # Update the internal bounds with alpha crown which are used by RaVeN
+            _ = bounded_model.compute_bounds(x=(bounded_images,), method=self.base_method_io_formulation, C=constraint_matrix,
+                                bound_upper=False, return_A=True, needed_A_dict=coef_dict)
         self.proceed_bound_propagation_output(bounded_model=bounded_model, lower_bnd=lower_bnd, A_dict=A_dict,
                                               final_lower_bnd=final_lower_bnd, final_upper_bnd=final_upper_bnd)
         return self

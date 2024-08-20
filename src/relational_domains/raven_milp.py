@@ -12,7 +12,6 @@ from src.specs.out_spec import create_out_targeted_uap_matrix
 def softtime(model, where):
     if where == GRB.Callback.MIP:
         runtime = model.cbGet(GRB.Callback.RUNTIME)
-        objbst = model.cbGet(GRB.Callback.MIP_OBJBST)
         objbnd = model.cbGet(GRB.Callback.MIP_OBJBND)
         if runtime > 200 and objbnd > 0.0:
             model.terminate()
@@ -166,7 +165,7 @@ class RaVeNMILPtransformer:
             
             
             if self.gmdl.status == 2:
-                percentages.append(p.X)
+                percentages.append(self.gmdl.ObjBound)
                 bin_sizes.append(len(bs))
             else:
                 if self.gmdl.status == 4:
@@ -175,7 +174,7 @@ class RaVeNMILPtransformer:
                     self.gmdl.optimize()
                 elif self.gmdl.status == 13 or self.gmdl.status == 9:
                     if self.gmdl.SolCount > 0:
-                        percentages.append(p.X)
+                        percentages.append(self.gmdl.ObjBound)
                         bin_sizes.append(len(bs))
                     else:
                         percentages.append(0.0)
@@ -1048,7 +1047,7 @@ class RaVeNMILPtransformer:
 
         if self.gmdl.status == 2:
 
-            return problem_min.X
+            return self.gmdl.ObjBound
         else:
             if self.gmdl.status == 4:
                 self.gmdl.setParam('PreDual',0)
