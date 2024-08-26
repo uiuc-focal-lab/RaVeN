@@ -81,7 +81,11 @@ class RelationalVerifierBackendWrapper:
                                                  individual_verification_results=individual_verification_results, 
                                                  diff=False)
         uap_diff_time = time.time() - start_time
-
+        if self.args.run_io_formulation_first:
+            uap_algorithm_no_diff_res.verified_proportion = max(uap_algorithm_no_diff_res.verified_proportion, 
+                                                    baseline_res.verified_proportion)            
+            # Add the i/o formulation time.
+            uap_diff_time += baseline_time
         # Populate timings.
         uap_algorithm_no_diff_res.timings = LP_TIMINGS(total_time=(individual_time + uap_diff_time), 
                                      constraint_formulation_time=uap_algorithm_no_diff_res.constraint_time,
@@ -96,8 +100,11 @@ class RelationalVerifierBackendWrapper:
                                                     diff=True)
             if uap_algorithm_res.verified_proportion is not None:
                 uap_algorithm_res.verified_proportion = max(uap_algorithm_no_diff_res.verified_proportion, 
-                                                        uap_algorithm_res.verified_proportion) 
+                                                        uap_algorithm_res.verified_proportion)
             uap_time = time.time() - start_time
+            # Add the i/o milp time if i/o formulation results are used.
+            if self.args.run_io_formulation_first:
+                uap_time += baseline_time
             uap_algorithm_res.timings = LP_TIMINGS(total_time=(individual_time + uap_time), 
                                 constraint_formulation_time=uap_algorithm_res.constraint_time,
                                 optimization_time=uap_algorithm_res.optimize_time)

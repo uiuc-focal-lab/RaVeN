@@ -18,7 +18,8 @@ class RaVeNArgs:
                  monotone_prop = None, monotone_inv = False, lp_formulation_threshold=3, 
                  try_image_smoothing=False, filter_threshold=None, 
                  fold_conv_layers=False, ligweight_diffpoly=False,
-                 monotone_splits = 1, monotone_lp = False, device='cpu') -> None:
+                 monotone_splits = 1, monotone_lp = False,
+                 run_io_formulation_first=True,  device='cpu') -> None:
 
         # Individual verification Domain e.g. DeepZ, DeepPoly, etc (see src/common/__init__.py).
         self.individual_prop_domain = individual_prop_domain
@@ -66,6 +67,10 @@ class RaVeNArgs:
         self.lightweight_diffpoly = ligweight_diffpoly
         self.monotone_splits = monotone_splits
         self.monotone_lp = monotone_lp
+        # Run i/o formulation first and include the results in RaVeN.
+        # This can help reduce runtime of RaVeN while maintaining precision
+        # when number of execution (k) is large. 
+        self.run_io_formulation_first = run_io_formulation_first
         self.device = device
         # if debug mode on rewrite params.
         if debug_mode == True:

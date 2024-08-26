@@ -42,7 +42,7 @@ class TestUntargetedUapSmall(TestCase):
                 spec_type=InputSpecType.UAP, count=20, count_per_prop=10, eps=1.0/255, 
                 net=config.CIFAR_CONV_SMALL, timeout=300, output_dir='pldi-results/',
                 uap_mode=raven_args.RavenMode.UAP, compute_proportion=True, write_file=True, 
-                device='cuda:3', enable_ablation=True)
+                device='cuda:1', enable_ablation=True)
         relational_ver.RelationalVerification(raven_verfication_args)
 
     # Untargeted UAP for IBPSmall CIFAR10 Network.
