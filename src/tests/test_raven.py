@@ -16,12 +16,12 @@ class TestUntargetedUapSmall(TestCase):
     # Untargeted UAP for ConvSmall MNIST DIFFAI Network.
     def test_convsmall_diffai_mnist(self):
         raven_verfication_args = raven_args.RaVeNArgs(
-                individual_prop_domain=Domain.LIRPA_ALPHA_CROWN,
+                individual_prop_domain=Domain.DEEPZ,
                 domain=Domain.RAVEN, baseline_domain=Domain.IOFORMULATION, dataset=Dataset.MNIST,
                 spec_type=InputSpecType.UAP, count=20, count_per_prop=10, eps=0.13, 
                 net=config.MNIST_CONV_SMALL_DIFFAI, timeout=300, output_dir='pldi-results/',
                 uap_mode=raven_args.RavenMode.UAP, compute_proportion=True, write_file=True,
-                enable_ablation=True, device='cuda:1')
+                device='cuda:1')
         relational_ver.RelationalVerification(raven_verfication_args)
 
     # Untargeted UAP for IBPSmall MNIST Network.
@@ -37,12 +37,12 @@ class TestUntargetedUapSmall(TestCase):
     # Untargeted UAP for ConvSmall CIFAR10 DIFFAI Network.
     def test_convsmall_diffai_cifar10(self):
         raven_verfication_args = raven_args.RaVeNArgs(
-                individual_prop_domain=Domain.LIRPA_ALPHA_CROWN,
+                individual_prop_domain=Domain.DEEPZ,
                 domain=Domain.RAVEN, baseline_domain=Domain.IOFORMULATION, dataset=Dataset.CIFAR10,
-                spec_type=InputSpecType.UAP, count=20, count_per_prop=10, eps=1.0/255, 
-                net=config.CIFAR_CONV_SMALL, timeout=300, output_dir='pldi-results/',
+                spec_type=InputSpecType.UAP, count=20, count_per_prop=10, eps=6.0/255, 
+                net=config.CIFAR_CONV_DIFFAI, timeout=300, output_dir='pldi-results/',
                 uap_mode=raven_args.RavenMode.UAP, compute_proportion=True, write_file=True, 
-                device='cuda:1', enable_ablation=True)
+                device='cuda:1')
         relational_ver.RelationalVerification(raven_verfication_args)
 
     # Untargeted UAP for IBPSmall CIFAR10 Network.
@@ -146,7 +146,7 @@ class TestTargetedUap(TestCase):
     # Targeted UAP for ConvSmall CIFAR10 DIFFAI Network.
     def test_convsmall_diffai_cifar10(self):
         raven_verfication_args = raven_args.RaVeNArgs(
-                individual_prop_domain=Domain.LIRPA_ALPHA_CROWN,
+                individual_prop_domain=Domain.DEEPZ,
                 domain=Domain.RAVEN, baseline_domain=Domain.IOFORMULATION, dataset=Dataset.CIFAR10,
                 spec_type=InputSpecType.UAP_TARGETED, count=20, count_per_prop=10, eps=4.0/255, 
                 net=config.CIFAR_CONV_DIFFAI, timeout=300, output_dir='pldi-results/',
