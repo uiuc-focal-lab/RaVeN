@@ -53,7 +53,12 @@ class DeepPolyTransformerOptimized:
             self.shape = (1, 1, 87)
         self.shapes.append(self.shape)
 
-        self.device = device if device is not None else 'cpu'
+        self.device = args.device if args.device is not None else 'cpu'
+        self.shift_to_device()
+
+    def shift_to_device(self):
+        self.ilb = self.ilb.to(self.device)
+        self.iub = self.iub.to(self.device)
 
     def pos_neg_weight_decomposition(self, coef):
         neg_comp = torch.where(coef < 0, coef, torch.zeros_like(coef, device=self.device))
@@ -71,10 +76,12 @@ class DeepPolyTransformerOptimized:
     
     def analyze_linear(self, diff_struct, layer):
         # layer = self.layers[-1]
-        lb_coef = diff_struct.lb_coef.matmul(layer.weight)
-        lb_bias = diff_struct.lb_bias + diff_struct.lb_coef.matmul(layer.bias)
-        ub_coef = diff_struct.ub_coef.matmul(layer.weight)
-        ub_bias = diff_struct.ub_bias + diff_struct.ub_coef.matmul(layer.bias)
+        weight = layer.weight.to(self.device)
+        bias = layer.bias.to(self.device)
+        lb_coef = diff_struct.lb_coef.matmul(weight)
+        lb_bias = diff_struct.lb_bias + diff_struct.lb_coef.matmul(bias)
+        ub_coef = diff_struct.ub_coef.matmul(weight)
+        ub_bias = diff_struct.ub_bias + diff_struct.ub_coef.matmul(bias)
 
         diff_struct = DeepPolyStruct(lb_bias=lb_bias, lb_coef=lb_coef, 
                                      ub_bias=ub_bias, ub_coef=ub_coef)
@@ -82,8 +89,8 @@ class DeepPolyTransformerOptimized:
     
     def analyze_conv(self, diff_struct, layer, layer_idx):
         # layer = self.layers[-1]
-        conv_weight=layer.weight
-        conv_bias=layer.bias
+        conv_weight=layer.weight.to(self.device)
+        conv_bias=layer.bias.to(self.device)
         preconv_shape= self.shapes[layer_idx]
         postconv_shape= self.shapes[layer_idx + 1]
         stride= layer.stride 
@@ -350,14 +357,6 @@ class DeepPolyTransformerOptimized:
         # print(f'diff: {self.ubs[-1] - self.lbs[-1]}')
 
         lb_debug, _ = self.concrete_substitution(diff_struct=diff_struct, lb_layer=self.ilb, ub_layer=self.iub)
-
         return BaselineVerifierRes(input=self.prop.input, layer_lbs=self.lbs, layer_ubs=self.ubs, final_lb=final_lb, 
                                    final_ub = final_ub, lb_bias=diff_struct.lb_bias, lb_coef=diff_struct.lb_coef, 
                                    eps=self.eps, last_conv_diff_struct=self.last_conv_diff_struct)
-
-
-
-# 1. Implement DeepPoly - with tanh and sigmoid.
-# 2. Implement conv layer supressions.
-# 3. Get good results on CIFAR-10 with diffpoly. 
-# 4. Rotation - X

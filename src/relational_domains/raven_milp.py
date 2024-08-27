@@ -12,7 +12,6 @@ from src.specs.out_spec import create_out_targeted_uap_matrix
 def softtime(model, where):
     if where == GRB.Callback.MIP:
         runtime = model.cbGet(GRB.Callback.RUNTIME)
-        objbst = model.cbGet(GRB.Callback.MIP_OBJBST)
         objbnd = model.cbGet(GRB.Callback.MIP_OBJBND)
         if runtime > 200 and objbnd > 0.0:
             model.terminate()
@@ -50,7 +49,13 @@ class RaVeNMILPtransformer:
         self.linear_layer_idx = -1 
 
         # Gurobi model and variables.
-        self.gmdl = grb.Model()
+        options = {
+                    "WLSACCESSID": "1176fdd0-0460-444a-bb42-62248b5e5d5e",
+                    "WLSSECRET": "c7bb8b34-13d5-4e91-a32a-7973a0bf7d93",
+                    "LICENSEID": 2530344,
+        }
+        env = grb.Env(params=options)
+        self.gmdl = grb.Model(env=env)
         self.gurobi_variables = []
         self.gurobi_var_dict = {}
         self.debug = True
@@ -160,7 +165,7 @@ class RaVeNMILPtransformer:
             
             
             if self.gmdl.status == 2:
-                percentages.append(p.X)
+                percentages.append(self.gmdl.ObjBound)
                 bin_sizes.append(len(bs))
             else:
                 if self.gmdl.status == 4:
@@ -169,7 +174,7 @@ class RaVeNMILPtransformer:
                     self.gmdl.optimize()
                 elif self.gmdl.status == 13 or self.gmdl.status == 9:
                     if self.gmdl.SolCount > 0:
-                        percentages.append(p.X)
+                        percentages.append(self.gmdl.ObjBound)
                         bin_sizes.append(len(bs))
                     else:
                         percentages.append(0.0)
@@ -234,8 +239,8 @@ class RaVeNMILPtransformer:
         # The uap perturbation.
         if len(self.xs) <= 0:
             return
-        delta = self.gmdl.addMVar(self.xs[0].shape[0], lb = -self.eps, ub = self.eps, vtype=grb.GRB.CONTINUOUS, name='uap_delta')
-        vs = [self.gmdl.addMVar(self.xs[i].shape[0], lb = self.xs[i].detach().numpy() - self.eps, ub = self.xs[i].detach().numpy() + self.eps, vtype=grb.GRB.CONTINUOUS, name=f'input_{i}') for i in range(self.batch_size)]
+        delta = self.gmdl.addMVar(self.xs[0].shape[0], lb = -self.eps, ub =self.eps.item(), vtype=grb.GRB.CONTINUOUS, name='uap_delta')
+        vs = [self.gmdl.addMVar(self.xs[i].shape[0], lb = self.xs[i].detach().numpy() -self.eps.item(), ub = self.xs[i].detach().numpy() +self.eps.item(), vtype=grb.GRB.CONTINUOUS, name=f'input_{i}') for i in range(self.batch_size)]
         # Ensure all inputs are perturbed by the same uap delta.
         for i, v in enumerate(vs):
             self.gmdl.addConstr(v == self.xs[i].detach().numpy() + delta)              
@@ -291,8 +296,8 @@ class RaVeNMILPtransformer:
 
     def create_variables(self):
         # Input constraint variables.
-        delta = self.gmdl.addMVar(self.xs[0].shape[0], lb = -self.eps, ub = self.eps, vtype=grb.GRB.CONTINUOUS, name='uap_delta')
-        vs = [self.gmdl.addMVar(self.xs[i].shape[0], lb = self.xs[i].detach().numpy() - self.eps, ub = self.xs[i].detach().numpy() + self.eps, vtype=grb.GRB.CONTINUOUS, name=f'input_{i}') for i in range(self.batch_size)]
+        delta = self.gmdl.addMVar(self.xs[0].shape[0], lb = -self.eps, ub =self.eps.item(), vtype=grb.GRB.CONTINUOUS, name='uap_delta')
+        vs = [self.gmdl.addMVar(self.xs[i].shape[0], lb = self.xs[i].detach().numpy() -self.eps.item(), ub = self.xs[i].detach().numpy() +self.eps.item(), vtype=grb.GRB.CONTINUOUS, name=f'input_{i}') for i in range(self.batch_size)]
         self.gurobi_var_dict[-1] = {'delta': delta, 'vs': vs, 'ds': None}
 
         # Layer constraint variables.
@@ -597,7 +602,8 @@ class RaVeNMILPtransformer:
     def create_vars(self, layer_idx, layer_type=''):
         ds = None
         if layer_type in ['linear', 'conv2d']:            
-            vs = [self.gmdl.addMVar(self.x_lbs[i][layer_idx].shape[0], lb = self.x_lbs[i][layer_idx], ub = self.x_ubs[i][layer_idx], vtype=grb.GRB.CONTINUOUS, name=f'layer_{layer_idx}_{layer_type}_x{i}') for i in range(self.batch_size)]
+            vs = [self.gmdl.addMVar(self.x_lbs[i][layer_idx].shape[0], lb = self.x_lbs[i][layer_idx].detach().numpy(), 
+                                    ub = self.x_ubs[i][layer_idx].detach().numpy(), vtype=grb.GRB.CONTINUOUS, name=f'layer_{layer_idx}_{layer_type}_x{i}') for i in range(self.batch_size)]
             if self.track_differences is True:
                 ds = [[self.gmdl.addMVar(self.d_lbs[(i, j)][layer_idx].shape[0], 
                                          lb=self.d_lbs[(i, j)][layer_idx] - self.tolerence, 
@@ -606,8 +612,8 @@ class RaVeNMILPtransformer:
                                          for j in range(i+1, self.batch_size)] 
                                          for i in range(self.batch_size)]
         elif layer_type == 'relu':
-            vs = [self.gmdl.addMVar(self.x_lbs[i][layer_idx].shape[0], lb=self.x_lbs[i][layer_idx],
-                                     ub = self.x_ubs[i][layer_idx], vtype=grb.GRB.CONTINUOUS, 
+            vs = [self.gmdl.addMVar(self.x_lbs[i][layer_idx].shape[0], lb=self.x_lbs[i][layer_idx].detach().numpy(),
+                                     ub = self.x_ubs[i][layer_idx].detach().numpy(), vtype=grb.GRB.CONTINUOUS, 
                                      name=f'layer_{layer_idx}_{layer_type}_x{i}') for i in range(self.batch_size)]
             if self.track_differences is True:
                 if self.args is not None and self.args.all_layer_sub is True:
@@ -651,7 +657,10 @@ class RaVeNMILPtransformer:
         vs, ds = self.create_vars(layer_idx, 'linear')
         
         for v_idx, v in enumerate(vs):
-            self.gmdl.addConstr(v == weight @ self.gurobi_variables[-1]['vs'][v_idx] + bias)
+            try:
+                self.gmdl.addConstr(v == weight @ self.gurobi_variables[-1]['vs'][v_idx] + bias)
+            except:
+                import pdb; pdb.set_trace()
 
         if self.track_differences is True:
             for i in range(self.batch_size):
@@ -1038,7 +1047,7 @@ class RaVeNMILPtransformer:
 
         if self.gmdl.status == 2:
 
-            return problem_min.X
+            return self.gmdl.ObjBound
         else:
             if self.gmdl.status == 4:
                 self.gmdl.setParam('PreDual',0)

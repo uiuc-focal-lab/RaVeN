@@ -11,6 +11,8 @@ class Domain(Enum):
     INDIVIDUAL = 3
     IOFORMULATION = 4
     RAVEN = 5
+    LIRPA = 6
+    LIRPA_ALPHA_CROWN = 7
 
 
 # Used for status of the verifier (currently unused)

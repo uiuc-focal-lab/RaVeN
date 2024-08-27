@@ -2,6 +2,7 @@ import torch
 from src.raven_results import RavenSingleRes
 import gurobipy as grb
 from src.common import Status
+from src.util import shift_list_device, shift_network_device
 
 
 
@@ -198,13 +199,17 @@ class IOFormulation:
             ub_layer = input_t + self.eps
             neg_comp_lb, pos_comp_lb = self.pos_neg_weight_decomposition(lb_coef)
             lb = neg_comp_lb @ ub_layer + pos_comp_lb @ lb_layer + lb_bias  
-
-
     
+    def shift_to_cpu(self):
+        self.lb_biases = shift_list_device(self.lb_biases, 'cpu')
+        self.lb_coefs = shift_list_device(self.lb_coefs, 'cpu')
+        self.net = shift_network_device(self.net, 'cpu')
+
     def formulate_crown_lp(self):
         if self.lb_coefs is None or self.lb_biases is None or self.eps is None:
             raise ValueError("lb_coefs or lb_bias or eps is NULL.")
         assert len(self.lb_coefs) == len(self.lb_biases)
+        self.shift_to_cpu()
         self.model.setParam('OutputFlag', False)
         # self.debug_lb_coef()
         vs = [self.model.addMVar(self.input_size, lb = self.inputs[i].detach().numpy() - self.eps.item(),

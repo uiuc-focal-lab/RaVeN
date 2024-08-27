@@ -25,8 +25,8 @@ class RelationalVerifierBackendWrapper:
     def run_monotone(self, monotone_prop) -> RavenResult:
         start_time = time.time()
         with torch.no_grad():
-            baseline_verfier = BaselineAnalyzerBackend(props=self.props, net=self.net, args=self.args)
-            individual_verification_results = baseline_verfier.run()
+            baseline_verifier = BaselineAnalyzerBackend(props=self.props, net=self.net, args=self.args)
+            individual_verification_results = baseline_verifier.run()
         individual_time = time.time() - start_time
         start_time = time.time()
         uap_algorithm_res = self.run_raven_backend(domain=self.args.domain, individual_verification_results=individual_verification_results, monotone = True, monotonic_inv = self.args.monotone_inv)
@@ -36,9 +36,8 @@ class RelationalVerifierBackendWrapper:
     # Targeted UAP verification.
     def run_targeted_uap(self) -> RavenResult:
         start_time = time.time()
-        with torch.no_grad():
-            baseline_verfier = BaselineAnalyzerBackend(props=self.props, net=self.net, args=self.args)
-            individual_verification_results = baseline_verfier.run()
+        baseline_verifier = BaselineAnalyzerBackend(props=self.props, net=self.net, args=self.args)
+        individual_verification_results = baseline_verifier.run()
         individual_time = time.time() - start_time
 
         # Run the I/O formulation verifier.
@@ -64,9 +63,8 @@ class RelationalVerifierBackendWrapper:
     # Untargeted UAP and worst-case hamming distance verification.
     def run_untargeted_uap(self) -> RavenResult:
         start_time = time.time()
-        with torch.no_grad():
-            baseline_verfier = BaselineAnalyzerBackend(props=self.props, net=self.net, args=self.args)
-            individual_verification_results = baseline_verfier.run()
+        baseline_verifier = BaselineAnalyzerBackend(props=self.props, net=self.net, args=self.args)
+        individual_verification_results = baseline_verifier.run()
         individual_time = time.time() - start_time
 
         start_time = time.time()
@@ -83,7 +81,11 @@ class RelationalVerifierBackendWrapper:
                                                  individual_verification_results=individual_verification_results, 
                                                  diff=False)
         uap_diff_time = time.time() - start_time
-
+        if self.args.run_io_formulation_first:
+            uap_algorithm_no_diff_res.verified_proportion = max(uap_algorithm_no_diff_res.verified_proportion, 
+                                                    baseline_res.verified_proportion)            
+            # Add the i/o formulation time.
+            uap_diff_time += baseline_time
         # Populate timings.
         uap_algorithm_no_diff_res.timings = LP_TIMINGS(total_time=(individual_time + uap_diff_time), 
                                      constraint_formulation_time=uap_algorithm_no_diff_res.constraint_time,
@@ -98,8 +100,11 @@ class RelationalVerifierBackendWrapper:
                                                     diff=True)
             if uap_algorithm_res.verified_proportion is not None:
                 uap_algorithm_res.verified_proportion = max(uap_algorithm_no_diff_res.verified_proportion, 
-                                                        uap_algorithm_res.verified_proportion) 
+                                                        uap_algorithm_res.verified_proportion)
             uap_time = time.time() - start_time
+            # Add the i/o milp time if i/o formulation results are used.
+            if self.args.run_io_formulation_first:
+                uap_time += baseline_time
             uap_algorithm_res.timings = LP_TIMINGS(total_time=(individual_time + uap_time), 
                                 constraint_formulation_time=uap_algorithm_res.constraint_time,
                                 optimization_time=uap_algorithm_res.optimize_time)
@@ -110,8 +115,8 @@ class RelationalVerifierBackendWrapper:
     def run(self) -> RavenResult:
         # Baseline results correspond to running each property individually.
         with torch.no_grad():
-            baseline_verfier = BaselineAnalyzerBackend(props=self.props, net=self.net, args=self.args)
-            individual_verification_results = baseline_verfier.run()
+            baseline_verifier = BaselineAnalyzerBackend(props=self.props, net=self.net, args=self.args)
+            individual_verification_results = baseline_verifier.run()
         baseline_res = self.run_raven_backend(domain=self.args.baseline_domain, 
                                                  individual_verification_results=individual_verification_results)
         uap_algorithm_res = self.run_raven_backend(domain=self.args.domain, 

@@ -5,6 +5,7 @@ from src.relational_domains.raven_milp import RaVeNMILPtransformer
 import time
 from src.common import Status
 from src.common.dataset import Dataset
+from src.util import shift_network_device, shift_list_device
 
 
 """
@@ -23,7 +24,7 @@ class RaVeN:
         self.difference_lbs_dict = {}
         self.difference_ubs_dict = {}
         self.input_list = []
-        self.eps = args.eps
+        self.eps = baseline_results[0].eps
         self.input_lbs = []
         self.input_ubs = []
         self.constr_matrices = []
@@ -50,7 +51,7 @@ class RaVeN:
                 with torch.no_grad():
                     diff_poly_ver = DiffPoly(input1=input1, input2=input2, net=self.net, 
                                 lb_input1=input1_lbs, ub_input1=input1_ubs,
-                                lb_input2=input2_lbs, ub_input2=input2_ubs, device='cpu', 
+                                lb_input2=input2_lbs, ub_input2=input2_ubs, device=self.args.device, 
                                 noise_ind = self.noise_ind, eps = self.eps, 
                                 monotone = monotone, monotone_prop = self.args.monotone_prop, monotone_splits = self.monotone_splits, use_all_layers=self.args.all_layer_sub, 
                                 lightweight_diffpoly=self.args.lightweight_diffpoly)
@@ -75,6 +76,26 @@ class RaVeN:
         for res in self.baseline_results:
             self.last_conv_diff_structs.append(res.last_conv_diff_struct)
     
+
+    def shift_to_cpu(self):
+        for input in self.input_list:
+            input = input.cpu()
+        new_lbs = []
+        for lb in self.input_lbs:
+            new_lbs.append(shift_list_device(lb, 'cpu'))
+        self.input_lbs = new_lbs
+        new_ubs = []
+        for ub in self.input_ubs:
+            new_ubs.append(shift_list_device(ub, 'cpu'))
+        self.input_ubs = new_ubs
+        for mat in self.constr_matrices:
+            mat = mat.cpu()
+        for key in self.difference_lbs_dict.keys():
+            self.difference_lbs_dict[key] = shift_list_device(self.difference_lbs_dict[key], 'cpu')
+        for key in self.difference_ubs_dict.keys():
+            self.difference_ubs_dict[key] = shift_list_device(self.difference_ubs_dict[key], 'cpu')
+        self.net = shift_network_device(self.net, 'cpu')
+
     def get_negative_threshold(self):
         lb_list = []
         for i, prop in enumerate(self.props):
@@ -130,6 +151,7 @@ class RaVeN:
                         verified_proportion=None) 
 
         self.populate_matrices()
+        self.shift_to_cpu()
             
         # Call the lp formulation with the differential lp code.
         if not diff:

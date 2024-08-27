@@ -15,6 +15,11 @@ class Layer:
         self.bias = bias
         self.type = type
 
+    def to(self, device):
+        if self.type not in [LayerType.Conv2D, LayerType.Linear]:
+            return
+        self.weight = self.weight.to(device)
+        self.bias = self.bias.to(device)
 
 class LayerType(Enum):
     Conv2D = 1

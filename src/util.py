@@ -21,6 +21,7 @@ from src.common.dataset import Dataset
 from src.common import Domain
 from src.domains.deepz import ZonoTransformer
 from src.domains.deeppoly import DeepPolyTransformerOptimized
+from src.domains.lirpaDomain import LirpaTransformer
 from src.common.network import LayerType, Layer
 from src.network_converters.binary_model_loader import load_model
 
@@ -308,10 +309,8 @@ def get_domain_builder(domain):
         return DeepPolyTransformerOptimized
     if domain == Domain.DEEPZ:
         return ZonoTransformer
-    if domain == Domain.BOX:
-        return BoxTransformer
-    if domain == Domain.LP:
-        return LPTransformer
+    if domain in [Domain.LIRPA, Domain.LIRPA_ALPHA_CROWN]:
+        return LirpaTransformer
     raise ValueError("Unexpected domain!")
 
 
@@ -410,6 +409,18 @@ def compute_input_shapes(net, input_shape):
 
     return shapes
 
+def shift_list_device(tensor_list, device):
+    new_tensor_list = []
+    for t in tensor_list:
+        t = t.to(device)
+        new_tensor_list.append(t)
+    return new_tensor_list
+
+
+def shift_network_device(net, device):
+    for layer in net:
+        layer = layer.to(device)
+    return net
 
 def log_memory_usage():
     mu = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
