@@ -1,7 +1,7 @@
 from src.specs.input_spec import InputSpecType
 from enum import IntEnum
 
-NET_HOME = "/home/debangshu/adaptive-raven/raven/src/nets/"
+NET_HOME = "./networks/"
 DEVICE = 'cpu'
 
 # Networks
