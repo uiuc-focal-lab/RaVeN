@@ -7,14 +7,16 @@ from src.baseline_res import BaselineVerifierRes
 from src.common import Domain
 
 class LirpaTransformer:
-    def __init__(self, prop, complete=False, device=None, args=None):
+    def __init__(self, prop, complete=False, device=None, args=None, prop_list=None):
         self.prop = prop
         self.args = args
+        self.prop_list = prop_list
         self.device = device if self.args.device is not None else 'cpu'
         self.ilb = prop.input_lb
         self.iub = prop.input_ub
         self.eps = torch.max(self.iub - self.ilb) / 2.0
         self.input = prop.input
+        self.input_list = None
         # I/O formulation uses crown as the individual verifier.
         self.base_method_io_formulation = 'CROWN'
         self.raven_domain = 'CROWN' if args.individual_prop_domain == Domain.LIRPA else 'CROWN-Optimized'
@@ -24,7 +26,11 @@ class LirpaTransformer:
         self.last_name = None
         self.la_coef = None
         self.lbias = None
+        self.supported_operators = [BoundConv, BoundLinear, BoundRelu]
         self.baseline_result = None
+        self.baseline_result_list = None
+        # Populate the layer names for the conv and linear layers.
+        self.layer_names = []
         self.size = prop.get_input_size()
         self.number_of_class = 10
         if self.size == 784:
@@ -55,15 +61,58 @@ class LirpaTransformer:
                 last_name = node_name
         assert last_name is not None
         self.last_name = last_name
-    
-    def proceed_bound_propagation_output(self, bounded_model, lower_bnd, 
-                                         A_dict, final_lower_bnd=None, final_upper_bnd=None):
+
+    def process_batch_output(self, bounded_model, lower_bnd, 
+                                    A_dict, final_lower_bnd=None, final_upper_bnd=None,
+                                    refined_lower_bnd=None):
+        # Check the lower bounds are computed for a batch.
+        assert len(lower_bnd.shape) > 1
+        batch_size = lower_bnd.shape[0]
+        lbs_dict, ubs_dict = {}, {}
+        lA_list, lbias_list = [], []
+        self.baseline_result_list = []
+        # iterate over and populate the results
+        for i in range(batch_size):
+            lbs_dict[i] = []
+            ubs_dict[i] = []
+            lA_list.append(A_dict[self.last_name][self.input_name]['lA'][i].squeeze().reshape(self.number_of_class-1, -1))
+            lbias_list.append(A_dict[self.last_name][self.input_name]['lbias'][i].squeeze())
+
+            for node_name, node in bounded_model._modules.items():
+                if node_name is self.last_name:
+                    continue
+                if type(node) in self.supported_operators:
+                    if type(node) != BoundRelu:
+                        assert node.lower is not None
+                        assert node.upper is not None                    
+                        lbs_dict[i].append(node.lower[i].reshape(-1))
+                        ubs_dict[i].append(node.upper[i].reshape(-1))
+                    else:
+                        assert min(len(lbs_dict[i]), len(ubs_dict[i])) > 0
+                        lbs_dict[i].append(torch.zeros(lbs_dict[i][-1].shape, device=lbs_dict[i][-1].device).reshape(-1))
+                        ubs_dict[i].append(torch.max(ubs_dict[i][-1], torch.zeros_like(ubs_dict[i][-1], device=ubs_dict[i][-1].device)).reshape(-1))
+
+            lbs_dict[i].append(final_lower_bnd[i].squeeze().reshape(-1))
+            ubs_dict[i].append(final_upper_bnd[i].squeeze().reshape(-1))
+            # Put the ilb and iub
+            lbs_dict[i].append(self.ilb_list[i].squeeze().reshape(-1))
+            ubs_dict[i].append(self.iub_list[i].squeeze().reshape(-1))
+
+            self.baseline_result_list.append(BaselineVerifierRes(input=self.input_list[i].reshape(-1), layer_lbs=lbs_dict[i], layer_ubs=ubs_dict[i], final_lb=lower_bnd[i].squeeze(), 
+                                        final_ub = None, lb_bias=lbias_list[-1], lb_coef=lA_list[-1], 
+                                        eps=self.eps, last_conv_diff_struct=None,
+                                        refined_lower_bnd= refined_lower_bnd[i] if refined_lower_bnd[i] is not None else None))
+
+
+            
+    def process_bound_propagation_output(self, bounded_model, lower_bnd, 
+                                         A_dict, final_lower_bnd=None, final_upper_bnd=None, 
+                                         refined_lower_bnd=None):
         i = 0
-        supported_operators = [BoundConv, BoundLinear, BoundRelu]
         for node_name, node in bounded_model._modules.items():
             if node_name is self.last_name:
                 continue
-            if type(node) in supported_operators:
+            if type(node) in self.supported_operators:
                 if type(node) != BoundRelu:
                     assert node.lower is not None
                     assert node.upper is not None                    
@@ -89,7 +138,60 @@ class LirpaTransformer:
         # import pdb;pdb.set_trace()
         self.baseline_result = BaselineVerifierRes(input=self.input.reshape(-1), layer_lbs=self.lbs, layer_ubs=self.ubs, final_lb=lower_bnd, 
                                         final_ub = None, lb_bias=lbias, lb_coef=lA, 
-                                        eps=self.eps, last_conv_diff_struct=None)
+                                        eps=self.eps, last_conv_diff_struct=None,
+                                        refined_lower_bnd= refined_lower_bnd if refined_lower_bnd is not None else None)
+
+    def populate_layer_names(self, model):
+        for node_name, node in model._modules.items():
+            if type(node) in [BoundLinear, BoundConv]:
+                self.layer_names.append(node_name)
+
+    # Handles a list of batches.
+    def handle_prop_list(self, bounded_model):
+        input_list = []
+        ilb_list = []
+        iub_list = []
+        constraint_matrices = []
+        for prop in self.prop_list:
+            ilb_list.append(prop.input_lb.view(*self.shape))
+            iub_list.append(prop.input_ub.view(*self.shape))
+            input_list.append(prop.input.view(*self.shape))
+            constraint_matrices.append(prop.output_constr_mat().T)
+        
+        input_list = torch.stack(input_list)
+        self.input_list = input_list
+        input_list = input_list.to(bounded_model.device) 
+        self.ilb_list = torch.stack(ilb_list)
+        ilb_list = self.ilb_list.to(bounded_model.device)
+        self.iub_list = torch.stack(iub_list)
+        iub_list = self.iub_list.to(bounded_model.device)
+        constraint_matrices = torch.stack(constraint_matrices).to(bounded_model.device)
+        self.get_output_layer_name(bounded_model=bounded_model)
+        ptb = PerturbationLpNorm(norm = np.inf, x_L=ilb_list, x_U=iub_list)
+        bounded_images = BoundedTensor(input_list, ptb)
+        coef_dict = {self.last_name: [self.input_name]}
+        # import pdb; pdb.set_trace()
+        result = bounded_model.compute_bounds(x=(bounded_images,), method=self.base_method_io_formulation, C=constraint_matrices,
+                                        bound_upper=False, return_A=True, needed_A_dict=coef_dict)
+        
+        lower_bnd, _, A_dict = result
+
+        # first extract upper and lower bound of final layer
+        result = bounded_model.compute_bounds(x=(bounded_images,), method=self.raven_domain, C=None,
+                                        bound_upper=True, return_A=True, needed_A_dict=coef_dict)
+        final_lower_bnd, final_upper_bnd, _ = result
+        if len(final_lower_bnd.shape) > 1:
+            final_lower_bnd = final_lower_bnd.squeeze()
+        if len(final_upper_bnd.shape) > 1:
+            final_upper_bnd = final_upper_bnd.squeeze()
+        if self.raven_domain == 'CROWN-Optimized':
+            # Update the internal bounds with alpha crown which are used by RaVeN
+            refined_lower_bnd, _, _ = bounded_model.compute_bounds(x=(bounded_images,), method=self.raven_domain, C=constraint_matrices,
+                                bound_upper=False, return_A=True, needed_A_dict=coef_dict)
+        self.process_batch_output(bounded_model=bounded_model, lower_bnd=lower_bnd, A_dict=A_dict,
+                                              final_lower_bnd=final_lower_bnd, final_upper_bnd=final_upper_bnd, 
+                                              refined_lower_bnd=refined_lower_bnd)
+
 
 
     def handle_prop(self, net):
@@ -100,6 +202,10 @@ class LirpaTransformer:
         if len(rand_input.shape) < 4:
             rand_input = rand_input.view(1, *rand_input.shape)
         bounded_model = BoundedModule(torch_net, rand_input, bound_opts={})
+        if self.args.enable_batch_processing and self.prop_list is not None:
+            self.handle_prop_list(bounded_model=bounded_model)
+            return self
+
         self.input = self.input.view(-1, *self.shape)
         self.ilb = self.ilb.view(-1, *self.shape)
         self.iub = self.iub.view(-1, *self.shape)
@@ -115,6 +221,7 @@ class LirpaTransformer:
         result = bounded_model.compute_bounds(x=(bounded_images,), method=self.base_method_io_formulation, C=constraint_matrix,
                                         bound_upper=False, return_A=True, needed_A_dict=coef_dict)
         lower_bnd, upper, A_dict = result
+
         # first extract upper and lower bound of final layer
         result = bounded_model.compute_bounds(x=(bounded_images,), method=self.raven_domain, C=None,
                                         bound_upper=True, return_A=True, needed_A_dict=coef_dict)
@@ -125,11 +232,16 @@ class LirpaTransformer:
             final_upper_bnd = final_upper_bnd.squeeze()
         if self.raven_domain == 'CROWN-Optimized':
             # Update the internal bounds with alpha crown which are used by RaVeN
-            _ = bounded_model.compute_bounds(x=(bounded_images,), method=self.base_method_io_formulation, C=constraint_matrix,
+            refined_lower_bnd, _, _ = bounded_model.compute_bounds(x=(bounded_images,), method=self.raven_domain, C=constraint_matrix,
                                 bound_upper=False, return_A=True, needed_A_dict=coef_dict)
-        self.proceed_bound_propagation_output(bounded_model=bounded_model, lower_bnd=lower_bnd, A_dict=A_dict,
-                                              final_lower_bnd=final_lower_bnd, final_upper_bnd=final_upper_bnd)
+        self.process_bound_propagation_output(bounded_model=bounded_model, lower_bnd=lower_bnd, A_dict=A_dict,
+                                              final_lower_bnd=final_lower_bnd, final_upper_bnd=final_upper_bnd, 
+                                              refined_lower_bnd=refined_lower_bnd)
         return self
+    
+    def populate_result_list(self):
+        assert self.baseline_result_list is not None
+        return self.baseline_result_list
 
 
     def populate_baseline_verifier_result(self, args=None):

@@ -1,3 +1,6 @@
+import sys
+# Should load the local local libraries like auto_LiRPA  
+sys.path.append('../')
 
 from src.raven_args import RaVeNArgs, RavenMode
 import src.specs.spec as specs

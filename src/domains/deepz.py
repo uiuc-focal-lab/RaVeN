@@ -11,7 +11,7 @@ device = 'cpu'
 This implementation taken from https://github.com/eth-sri/eran.
 """
 class ZonoTransformer:
-    def __init__(self, prop, cof_constrain=None, bias_constrain=None, complete=False, args=None):
+    def __init__(self, prop, cof_constrain=None, bias_constrain=None, complete=False, args=None, prop_list=None):
         """
         ilb: the lower bound for the input variables
         iub: the upper bound for the input variables
@@ -19,6 +19,7 @@ class ZonoTransformer:
         self.size = prop.get_input_size()
         #print(self.size)
         self.prop = prop
+        self.prop_list = prop_list
         self.ilb = prop.input_lb
         self.iub = prop.input_ub
         self.eps = torch.max(self.iub - self.ilb) / 2.0
@@ -316,6 +317,9 @@ class ZonoTransformer:
 
         self.set_zono(center, cof)
         return self
+
+    def populate_result_list(self):
+        raise NotImplementedError(f"The DeepPoly implementation does not support batches")
 
     # Populate the scaling factor for perturbation for different
     # index.

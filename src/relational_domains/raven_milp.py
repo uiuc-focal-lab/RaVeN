@@ -47,15 +47,7 @@ class RaVeNMILPtransformer:
         self.props = props
         self.last_conv_diff_structs = last_conv_diff_structs
         self.linear_layer_idx = -1 
-
-        # Gurobi model and variables.
-        options = {
-                    "WLSACCESSID": "1176fdd0-0460-444a-bb42-62248b5e5d5e",
-                    "WLSSECRET": "c7bb8b34-13d5-4e91-a32a-7973a0bf7d93",
-                    "LICENSEID": 2530344,
-        }
-        env = grb.Env(params=options)
-        self.gmdl = grb.Model(env=env)
+        self.gmdl = grb.Model()
         self.gurobi_variables = []
         self.gurobi_var_dict = {}
         self.debug = True
@@ -239,8 +231,10 @@ class RaVeNMILPtransformer:
         # The uap perturbation.
         if len(self.xs) <= 0:
             return
-        delta = self.gmdl.addMVar(self.xs[0].shape[0], lb = -self.eps, ub =self.eps.item(), vtype=grb.GRB.CONTINUOUS, name='uap_delta')
-        vs = [self.gmdl.addMVar(self.xs[i].shape[0], lb = self.xs[i].detach().numpy() -self.eps.item(), ub = self.xs[i].detach().numpy() +self.eps.item(), vtype=grb.GRB.CONTINUOUS, name=f'input_{i}') for i in range(self.batch_size)]
+        eps = (self.x_ubs[0][-1] - self.x_lbs[0][-1])/2.0
+        eps = eps.numpy()
+        delta = self.gmdl.addMVar(self.xs[0].shape[0], lb = -eps, ub =eps, vtype=grb.GRB.CONTINUOUS, name='uap_delta')
+        vs = [self.gmdl.addMVar(self.xs[i].shape[0], lb = self.xs[i].detach().numpy() -eps, ub = self.xs[i].detach().numpy() +eps, vtype=grb.GRB.CONTINUOUS, name=f'input_{i}') for i in range(self.batch_size)]
         # Ensure all inputs are perturbed by the same uap delta.
         for i, v in enumerate(vs):
             self.gmdl.addConstr(v == self.xs[i].detach().numpy() + delta)              
@@ -1003,9 +997,9 @@ class RaVeNMILPtransformer:
         if self.batch_size <= 0:
             return
         self.gmdl.setParam('OutputFlag', False)
-        self.gmdl.setParam('TimeLimit', 600)
+        self.gmdl.setParam('TimeLimit', 500)
         self.gmdl.Params.MIPFocus = 3
-        self.gmdl.Params.ConcurrentMIP = 3
+        self.gmdl.Params.ConcurrentMIP = 6
         self.constraint_time = - time.time()
         if self.args is not None and self.args.fold_conv_layers is True:
             self.create_constraints_folded_conv_layers()

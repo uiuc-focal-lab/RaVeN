@@ -16,9 +16,11 @@ class RaVeNArgs:
                  compute_proportion=True, no_lp_for_verified=True, write_file = False, 
                  debug_mode=False, track_differences=True, enable_ablation = False,
                  monotone_prop = None, monotone_inv = False, lp_formulation_threshold=3, 
-                 try_image_smoothing=False, filter_threshold=None, 
+                 try_image_smoothing=False, filter_threshold=None,
                  fold_conv_layers=False, ligweight_diffpoly=False,
                  monotone_splits = 1, monotone_lp = False,
+                 enable_batch_processing=False, 
+                 refine_intermediate_bounds=True, optimize_layers_count = None,
                  run_io_formulation_first=True,  device='cpu') -> None:
 
         # Individual verification Domain e.g. DeepZ, DeepPoly, etc (see src/common/__init__.py).
@@ -67,6 +69,10 @@ class RaVeNArgs:
         self.lightweight_diffpoly = ligweight_diffpoly
         self.monotone_splits = monotone_splits
         self.monotone_lp = monotone_lp
+        self.enable_batch_processing = enable_batch_processing
+        # LiRPA internal parameters.
+        self.refine_intermediate_bounds = refine_intermediate_bounds
+        self.optimize_layers_count = optimize_layers_count
         # Run i/o formulation first and include the results in RaVeN.
         # This can help reduce runtime of RaVeN while maintaining precision
         # when number of execution (k) is large. 

@@ -10,7 +10,7 @@ from src.network_converters.network_conversion_helper import convert_model, is_l
 import pandas as pd
 import numpy as np
 from torchvision.transforms import Normalize as norm
-from src.config import is_linear_model
+from src.config import is_linear_model, no_normalization_for_mnist
 import sklearn.preprocessing as preprocessing
 
 '''
@@ -627,7 +627,7 @@ def get_patch_specs(inputs, labels, eps, dataset, p_width=2, p_length=2):
 
 def get_mean_std(dataset, net_name=''):
     if dataset == Dataset.MNIST:
-        if 'crown' in net_name or is_linear_model(net_name) :
+        if no_normalization_for_mnist(net_name) or is_linear_model(net_name) :
             means = [0.0]
             stds = [1.0]
         else:

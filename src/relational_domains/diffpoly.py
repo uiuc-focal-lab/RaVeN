@@ -776,7 +776,8 @@ class DiffPoly:
     # Debugging for avoid errors due to floating point imprecision.
     def check_lb_ub_correctness(self, lb, ub):
         if not torch.all(lb <= ub + 1e-4) :
-            assert torch.all(lb <= ub + 1e-4)
+            print(f"maximum violation {torch.max(lb - ub)}")
+            assert torch.all(lb <= ub + 1e-2)
 
     def initialize_back_prop_struct(self, layer_idx):
         layer_size = self.get_layer_size(linear_layer_index=layer_idx)

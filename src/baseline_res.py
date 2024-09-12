@@ -3,7 +3,7 @@
 class BaselineVerifierRes:
     def __init__(self, input, layer_lbs, layer_ubs, final_lb, final_ub, time=None, zono_center=None, 
                  zono_coef = None, lb_coef=None, lb_bias=None, target_ubs = None, target_centers = None, target_coefs = None, 
-                 noise_ind = None, eps = None, last_conv_diff_struct=None) -> None:
+                 noise_ind = None, eps = None, last_conv_diff_struct=None, refined_lower_bnd=None) -> None:
         self.input = input
         self.layer_lbs = layer_lbs
         self.layer_ubs = layer_ubs
@@ -22,3 +22,9 @@ class BaselineVerifierRes:
         self.target_coefs = target_coefs
         self.eps = eps
         self.last_conv_diff_struct = last_conv_diff_struct
+        self.refined_lower_bnd = refined_lower_bnd
+
+    # Returns the refined bound if available else returns
+    # existing lower bound.
+    def get_refined_bnd(self):
+        return self.refined_lower_bnd if self.refined_lower_bnd is not None else self.final_lb

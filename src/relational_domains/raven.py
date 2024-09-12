@@ -99,8 +99,8 @@ class RaVeN:
     def get_negative_threshold(self):
         lb_list = []
         for i, prop in enumerate(self.props):
-            if torch.min(self.baseline_results[i].final_lb) < 0.0:
-                lb_list.append(torch.min(self.baseline_results[i].final_lb))
+            if torch.min(self.baseline_results[i].get_refined_bnd()) < 0.0:
+                lb_list.append(torch.min(self.baseline_results[i].get_refined_bnd()))
         lb_list.sort()
         if len(lb_list) <= self.lp_formulation_threshold:
             return -1e9
@@ -114,7 +114,7 @@ class RaVeN:
         if self.args.filter_threshold is not None:
             threshold = max(threshold, self.args.filter_threshold)
         for i, prop in enumerate(self.props):
-            lb = torch.min(self.baseline_results[i].final_lb)
+            lb = torch.min(self.baseline_results[i].get_refined_bnd())
             if  lb >= 0.0 or lb <= threshold:
                 if lb >= 0.0:
                     self.baseline_verified_props += 1

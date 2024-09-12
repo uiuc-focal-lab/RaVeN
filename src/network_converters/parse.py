@@ -9,7 +9,7 @@ from src.common.network import Layer, LayerType, Network
 from src.domains.lirpaDomain import LirpaTransformer
 
 
-def get_transformer(transformer, net, prop, relu_mask=None):
+def get_transformer(transformer, net, relu_mask=None):
     if  type(transformer) is LirpaTransformer:
         return handle_lirpa_domain(net=net, transformer=transformer)
 

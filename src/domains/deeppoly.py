@@ -21,9 +21,10 @@ class DeepPolyStruct:
 This implementation taken from https://github.com/eth-sri/eran.
 """
 class DeepPolyTransformerOptimized:
-    def __init__(self, prop, complete=False, device=None, args=None):
+    def __init__(self, prop, complete=False, device=None, args=None, prop_list=None):
         self.lbs = []
         self.ubs = []
+        self.prop_list = prop_list
         self.prop = prop
         self.layers = []
         self.complete = complete
@@ -334,7 +335,9 @@ class DeepPolyTransformerOptimized:
                 new_ubs.append(self.ubs[i])
         self.lbs = new_lbs
         self.ubs = new_ubs
-                
+
+    def populate_result_list(self):
+        raise NotImplementedError(f"The DeepPoly implementation does not support batches")
 
     def populate_baseline_verifier_result(self, args=None):
         weight = self.prop.output_constr_mat().T
